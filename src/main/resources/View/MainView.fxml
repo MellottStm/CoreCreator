@@ -7,7 +7,6 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.TreeView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
@@ -18,18 +17,16 @@
 
         <!-- 顶部菜单栏（深色） -->
 <top>
-    <MenuBar style="-fx-background-color: #252526; -fx-border-color: #333333;">
-        <Menu text="File" style="-fx-text-fill: #ffffff;">
+    <MenuBar >
+        <Menu text="File">
             <MenuItem fx:id="openFolderMenuItem" text="open..." />
+            <MenuItem fx:id="openSettingMenuItem" text="settings.." />
         </Menu>
     </MenuBar>
 </top>
-
-        <!-- 主体三区域布局 -->
+<!-- 主体三区域布局 -->
 <center>
-    <SplitPane dividerPositions="0.20, 0.80"
-               orientation="HORIZONTAL"
-               style="-fx-background-color: #1e1e1e;">
+    <SplitPane fx:id="mainSplitPane" dividerPositions="0.2, 0.8" orientation="HORIZONTAL" style="-fx-background-color: #1e1e1e;">
 
     <!-- 左侧：文件目录树 -->
     <VBox fx:id="explorerVBox" spacing="5" style="-fx-background-color: #252526;">
@@ -39,34 +36,24 @@
 
     <!-- 中间：Monaco 编辑器 -->
     <StackPane fx:id="editorContainer" prefHeight="526.0" prefWidth="414.0" style="-fx-background-color: #1e1e1e;" />
-         <VBox prefHeight="526.0" prefWidth="72.0">
-            <children>
-                <Label style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10.0;" text=" Assistant" />
-                <TextArea fx:id="chatArea" editable="false" style="-fx-control-inner-background: #1e1e1e;                                  -fx-text-fill: #cccccc;                                  -fx-font-family: 'Consolas', monospace;" wrapText="true" VBox.vgrow="ALWAYS" />
-               <HBox prefHeight="100.0" prefWidth="200.0">
-                  <children>
-                      <VBox spacing="6">
-                          <TextArea fx:id="promptField"
-                                    promptText="input your query..."
-                                    prefRowCount="3"
-                                    wrapText="true"
-                                    style="-fx-control-inner-background: #3c3c3c;
-                                     -fx-text-fill: #ffffff;
-                                     -fx-prompt-text-fill: #888888;
-                                     -fx-font-family: 'Consolas', monospace;"/>
+    <!-- 右侧：AI助手 -->
+    <VBox fx:id="aiView" prefHeight="526.0" prefWidth="72.0">
+        <children>
+            <Label style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10.0;" text=" Assistant" />
+            <TextArea fx:id="chatArea" editable="false" style="-fx-control-inner-background: #1e1e1e;-fx-text-fill: #cccccc;-fx-font-family: 'Consolas', monospace;" wrapText="true" VBox.vgrow="ALWAYS" />
+           <HBox prefHeight="100.0" prefWidth="200.0">
+              <children>
+                  <VBox alignment="CENTER">
+                      <TextArea fx:id="promptField" promptText="input your query..." style="-fx-control-inner-background: #3c3c3c;                                      -fx-text-fill: #ffffff;                                      -fx-prompt-text-fill: #888888;" wrapText="true" />
 
-                          <HBox alignment="CENTER_RIGHT">
-                              <Button fx:id="sendButton"
-                                      text="发送"
-                                      style="-fx-background-color: #007acc;
-                                       -fx-text-fill: white;
-                                       -fx-font-weight: bold;"/>
-                          </HBox>
-                      </VBox>
-                  </children>
-               </HBox>
-            </children>
-         </VBox>
+                      <HBox alignment="CENTER_RIGHT">
+                          <Button fx:id="sendButton" style="-fx-background-color: #007acc;                                        -fx-text-fill: white;" text="发送" />
+                      </HBox>
+                  </VBox>
+              </children>
+           </HBox>
+        </children>
+    </VBox>
 
 </SplitPane>
 </center>
