@@ -77,7 +77,3 @@
 .scroll-bar {
     -fx-background-color: #252526;
 }
-
-.tree-view .tree-disclosure-node .arrow {
-    -fx-background-color: white;
-}
