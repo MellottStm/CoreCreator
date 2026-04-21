@@ -13,6 +13,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.control.ScrollPane?>
 <BorderPane prefHeight="553.0" prefWidth="833.0" style="-fx-background-color: #1e1e1e;" stylesheets="@../CSS/theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.smt.Controller.MainController">
 
         <!-- 顶部菜单栏（深色） -->
@@ -37,23 +38,68 @@
     <!-- 中间：Monaco 编辑器 -->
     <StackPane fx:id="editorContainer" prefHeight="526.0" prefWidth="414.0" style="-fx-background-color: #1e1e1e;" />
     <!-- 右侧：AI助手 -->
-    <VBox fx:id="aiView" prefHeight="526.0" prefWidth="72.0">
-        <children>
-            <Label style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10.0;" text=" Assistant" />
-            <TextArea fx:id="chatArea" editable="false" style="-fx-control-inner-background: #1e1e1e;-fx-text-fill: #cccccc;-fx-font-family: 'Consolas', monospace;" wrapText="true" VBox.vgrow="ALWAYS" />
-           <HBox prefHeight="100.0" prefWidth="200.0">
-              <children>
-                  <VBox alignment="CENTER">
-                      <TextArea fx:id="promptField" promptText="input your query..." style="-fx-control-inner-background: #3c3c3c;                                      -fx-text-fill: #ffffff;                                      -fx-prompt-text-fill: #888888;" wrapText="true" />
+        <VBox fx:id="aiView"
+              spacing="8"
+              style="-fx-background-color: #252526;">
 
-                      <HBox alignment="CENTER_RIGHT">
-                          <Button fx:id="sendButton" style="-fx-background-color: #007acc;                                        -fx-text-fill: white;" text="发送" />
-                      </HBox>
-                  </VBox>
-              </children>
-           </HBox>
-        </children>
-    </VBox>
+            <!-- 顶部标题 -->
+            <Label text="AI Assistant"
+                   style="-fx-text-fill: #ffffff;
+                  -fx-font-size: 14px;
+                  -fx-font-weight: bold;
+                  -fx-padding: 10 10 5 10;" />
+
+            <!-- 聊天内容区（核心优化：ScrollPane） -->
+            <ScrollPane fitToWidth="true"
+                        fitToHeight="true"
+                        VBox.vgrow="ALWAYS"
+                        style="-fx-background: #1e1e1e;
+                       -fx-background-color: transparent;
+                       -fx-border-color: transparent;">
+
+                <TextArea fx:id="chatArea"
+                          editable="false"
+                          wrapText="true"
+                          style="-fx-control-inner-background: #1e1e1e;
+                         -fx-text-fill: #d4d4d4;
+                         -fx-font-family: 'Consolas', monospace;
+                         -fx-background-insets: 0;
+                         -fx-background-color: transparent;
+                         -fx-padding: 10;" />
+            </ScrollPane>
+
+            <!-- 输入区域（Cursor风格底部输入栏） -->
+            <HBox spacing="6"
+                  alignment="CENTER_LEFT"
+                  style="-fx-padding: 6;
+                 -fx-background-color: transparent;">
+
+                <!-- 输入框 -->
+                <TextArea fx:id="promptField"
+                          prefRowCount="3"
+                          prefWidth="80"
+                          wrapText="true"
+                          promptText="Ask something..."
+                          HBox.hgrow="ALWAYS"
+                          style="-fx-control-inner-background: #3c3c3c;
+                         -fx-text-fill: #ffffff;
+                         -fx-background-color: transparent;
+                         -fx-prompt-text-fill: #888888;
+                         -fx-background-radius: 8;" />
+
+                <!-- 发送按钮 -->
+                <Button fx:id="sendButton"
+                        text="➤"
+                        prefWidth="50"
+                        prefHeight="30"
+                        style="-fx-background-color: #007acc;
+                       -fx-text-fill: white;
+                       -fx-background-radius: 10;
+                       -fx-font-size: 14;
+                       -fx-cursor: hand;" />
+            </HBox>
+
+        </VBox>
 
 </SplitPane>
 </center>
