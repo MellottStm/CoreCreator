@@ -1,41 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.smt.Controller.MainController"
-            stylesheets="@../CSS/theme.css"
-
-        style="-fx-background-color: #1e1e1e;">
+<BorderPane prefHeight="553.0" prefWidth="833.0" style="-fx-background-color: #1e1e1e;" stylesheets="@../CSS/theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.smt.Controller.MainController">
 
         <!-- 顶部菜单栏（深色） -->
 <top>
 <MenuBar style="-fx-background-color: #252526; -fx-border-color: #333333;">
-    <Menu text="File" style="-fx-text-fill: #ffffff;">
-        <MenuItem text="open..." fx:id="openFolderMenuItem"/>
+    <Menu style="-fx-text-fill: #ffffff;" text="File">
+        <MenuItem fx:id="openFolderMenuItem" text="open..." />
     </Menu>
 </MenuBar>
 </top>
 
         <!-- 主体三区域布局 -->
 <center>
-<SplitPane dividerPositions="0.22, 0.75"
-           orientation="HORIZONTAL"
-           style="-fx-background-color: #1e1e1e; -fx-padding: 0;">
+<SplitPane dividerPositions="0.2, 0.5" orientation="HORIZONTAL" style="-fx-background-color: #1e1e1e; -fx-padding: 0;">
 
     <!-- 左侧：文件目录树 -->
-    <VBox fx:id="explorerVBox" spacing="5"
-          style="-fx-background-color: #252526;">
-        <Label fx:id="fileTitle" text="Project"
-               style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10;"/>
-        <TreeView fx:id="fileTreeView" VBox.vgrow="ALWAYS"/>
+    <VBox fx:id="explorerVBox" spacing="5" style="-fx-background-color: #252526;">
+        <Label fx:id="fileTitle" style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10;" text="Project" />
+        <TreeView fx:id="fileTreeView" VBox.vgrow="ALWAYS" />
     </VBox>
 
     <!-- 中间：Monaco 编辑器 -->
-    <StackPane fx:id="editorContainer"
-               style="-fx-background-color: #1e1e1e;"/>
+    <StackPane fx:id="editorContainer" prefHeight="526.0" prefWidth="414.0" style="-fx-background-color: #1e1e1e;" />
+         <VBox prefHeight="526.0" prefWidth="72.0">
+            <children>
+                <Label style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10.0;" text=" Assistant" />
+                <TextArea fx:id="chatArea" editable="false" style="-fx-control-inner-background: #1e1e1e;                                  -fx-text-fill: #cccccc;                                  -fx-font-family: 'Consolas', monospace;" wrapText="true" VBox.vgrow="ALWAYS" />
+               <HBox prefHeight="100.0" prefWidth="200.0">
+                  <children>
+                      <TextField fx:id="promptField" prefHeight="99.0" prefWidth="356.0" promptText="input your query..." style="-fx-background-color: #3c3c3c;                                       -fx-text-fill: #ffffff;                                       -fx-prompt-text-fill: #888888;" HBox.hgrow="ALWAYS" />
+                      <Button fx:id="sendButton" prefHeight="99.0" prefWidth="54.0" style="-fx-background-color: #007acc;                                    -fx-text-fill: white;                                    -fx-font-weight: bold;" text="发送" />
+                  </children>
+               </HBox>
+            </children></VBox>
+
 </SplitPane>
 </center>
 </BorderPane>
