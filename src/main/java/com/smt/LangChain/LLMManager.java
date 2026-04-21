@@ -15,5 +15,4 @@ public class LLMManager {
             .baseUrl("https://ark.cn-beijing.volces.com/api/v3")
             .build();
 
-
 }
