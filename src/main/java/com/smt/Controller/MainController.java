@@ -33,7 +33,7 @@ public class MainController implements Initializable {
     private File currentRootDir;
 
     @FXML private TextArea chatArea;
-    @FXML private TextField promptField;
+    @FXML private TextArea promptField;
     @FXML private Button sendButton;
 
     @Override

@@ -18,16 +18,18 @@
 
         <!-- 顶部菜单栏（深色） -->
 <top>
-<MenuBar style="-fx-background-color: #252526; -fx-border-color: #333333;">
-    <Menu style="-fx-text-fill: #ffffff;" text="File">
-        <MenuItem fx:id="openFolderMenuItem" text="open..." />
-    </Menu>
-</MenuBar>
+    <MenuBar style="-fx-background-color: #252526; -fx-border-color: #333333;">
+        <Menu text="File" style="-fx-text-fill: #ffffff;">
+            <MenuItem fx:id="openFolderMenuItem" text="open..." />
+        </Menu>
+    </MenuBar>
 </top>
 
         <!-- 主体三区域布局 -->
 <center>
-<SplitPane dividerPositions="0.2, 0.5" orientation="HORIZONTAL" style="-fx-background-color: #1e1e1e; -fx-padding: 0;">
+    <SplitPane dividerPositions="0.20, 0.80"
+               orientation="HORIZONTAL"
+               style="-fx-background-color: #1e1e1e;">
 
     <!-- 左侧：文件目录树 -->
     <VBox fx:id="explorerVBox" spacing="5" style="-fx-background-color: #252526;">
@@ -43,11 +45,28 @@
                 <TextArea fx:id="chatArea" editable="false" style="-fx-control-inner-background: #1e1e1e;                                  -fx-text-fill: #cccccc;                                  -fx-font-family: 'Consolas', monospace;" wrapText="true" VBox.vgrow="ALWAYS" />
                <HBox prefHeight="100.0" prefWidth="200.0">
                   <children>
-                      <TextField fx:id="promptField" prefHeight="99.0" prefWidth="356.0" promptText="input your query..." style="-fx-background-color: #3c3c3c;                                       -fx-text-fill: #ffffff;                                       -fx-prompt-text-fill: #888888;" HBox.hgrow="ALWAYS" />
-                      <Button fx:id="sendButton" prefHeight="99.0" prefWidth="54.0" style="-fx-background-color: #007acc;                                    -fx-text-fill: white;                                    -fx-font-weight: bold;" text="发送" />
+                      <VBox spacing="6">
+                          <TextArea fx:id="promptField"
+                                    promptText="input your query..."
+                                    prefRowCount="3"
+                                    wrapText="true"
+                                    style="-fx-control-inner-background: #3c3c3c;
+                                     -fx-text-fill: #ffffff;
+                                     -fx-prompt-text-fill: #888888;
+                                     -fx-font-family: 'Consolas', monospace;"/>
+
+                          <HBox alignment="CENTER_RIGHT">
+                              <Button fx:id="sendButton"
+                                      text="发送"
+                                      style="-fx-background-color: #007acc;
+                                       -fx-text-fill: white;
+                                       -fx-font-weight: bold;"/>
+                          </HBox>
+                      </VBox>
                   </children>
                </HBox>
-            </children></VBox>
+            </children>
+         </VBox>
 
 </SplitPane>
 </center>
