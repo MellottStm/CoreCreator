@@ -1,32 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+
 <BorderPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.smt.Controller.MainController">
-    <!-- 顶部菜单栏 -->
-    <top>
-        <MenuBar>
-            <Menu text="文件">
-                <MenuItem text="打开文件夹..." fx:id="openFolderMenuItem"/>
-            </Menu>
-<!--            <Menu text="编辑">-->
-<!--                &lt;!&ndash; 后续可加 保存、另存为 等 &ndash;&gt;-->
-<!--            </Menu>-->
-        </MenuBar>
-    </top>
+            fx:controller="com.smt.Controller.MainController"
+            stylesheets="@../CSS/theme.css"
 
-    <!-- 主体区域布局 -->
-    <center>
-        <SplitPane dividerPositions="0.22, 0.78" orientation="HORIZONTAL">
+        style="-fx-background-color: #1e1e1e;">
 
-            <!-- 左侧：文件目录树 -->
-            <VBox fx:id="explorerVBox" spacing="5">
-                <Label text="文件浏览器" style="-fx-font-weight: bold; -fx-padding: 8;"/>
-                <TreeView fx:id="fileTreeView" VBox.vgrow="ALWAYS"/>
-            </VBox>
-            <StackPane fx:id="editorContainer"/>
-        </SplitPane>
-    </center>
+        <!-- 顶部菜单栏（深色） -->
+<top>
+<MenuBar style="-fx-background-color: #252526; -fx-border-color: #333333;">
+    <Menu text="文件" style="-fx-text-fill: #000000;">
+        <MenuItem text="打开文件夹..." fx:id="openFolderMenuItem"/>
+    </Menu>
+</MenuBar>
+</top>
 
+        <!-- 主体三区域布局 -->
+<center>
+<SplitPane dividerPositions="0.22, 0.78"
+           orientation="HORIZONTAL"
+           style="-fx-background-color: #1e1e1e; -fx-padding: 0;">
+
+    <!-- 左侧：文件目录树 -->
+    <VBox fx:id="explorerVBox" spacing="5"
+          style="-fx-background-color: #252526;">
+        <Label text="文件浏览器"
+               style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10;"/>
+        <TreeView fx:id="fileTreeView" VBox.vgrow="ALWAYS"/>
+    </VBox>
+
+    <!-- 中间：Monaco 编辑器 -->
+    <StackPane fx:id="editorContainer"
+               style="-fx-background-color: #1e1e1e;"/>
+</SplitPane>
+</center>
 </BorderPane>

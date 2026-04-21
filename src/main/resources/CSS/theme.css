@@ -1,0 +1,39 @@
+/* ==================== 全局深色主题 ==================== */
+.root {
+    -fx-background-color: #1e1e1e;
+    -fx-text-fill: #cccccc;
+}
+
+/* SplitPane 分割线颜色 */
+.split-pane > .split-pane-divider {
+    -fx-background-color: #333333;
+}
+
+/* TreeView 深色 */
+.tree-view {
+    -fx-background-color: #252526;
+}
+.tree-cell {
+    -fx-text-fill: #cccccc;
+    -fx-background-color: transparent;
+}
+.tree-cell:selected {
+    -fx-background-color: #094771;
+    -fx-text-fill: #ffffff;
+}
+
+/* MenuBar 更深 */
+.menu-bar {
+    -fx-background-color: #252526;
+}
+.menu {
+    -fx-text-fill: #cccccc;
+}
+.menu-item {
+    -fx-text-fill: #cccccc;
+}
+
+/* 滚动条美化（可选） */
+.scroll-bar {
+    -fx-background-color: #252526;
+}
