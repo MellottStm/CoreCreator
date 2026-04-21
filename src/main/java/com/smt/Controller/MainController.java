@@ -28,9 +28,13 @@ public class MainController implements Initializable {
     private MenuItem openFolderMenuItem;
     @FXML private TreeView<File> fileTreeView;
     @FXML private StackPane editorContainer;
-
+    @FXML private Label fileTitle;
     private MonacoFX monacoFX;
     private File currentRootDir;
+
+    @FXML private TextArea chatArea;
+    @FXML private TextField promptField;
+    @FXML private Button sendButton;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -39,7 +43,7 @@ public class MainController implements Initializable {
         editorContainer.getChildren().add(monacoFX);
         monacoFX.getEditor().setCurrentLanguage("java");
         monacoFX.getEditor().setCurrentTheme("vs-dark");
-
+        fileTitle.setVisible(false);
         // 2. 文件树配置（显示文件名 + 图标）
         fileTreeView.setCellFactory(tv -> new TreeCell<File>() {
             @Override
@@ -81,6 +85,7 @@ public class MainController implements Initializable {
 
     /** 构建完整文件树（文件夹优先，递归加载） */
     private void buildFileTree(File rootDir) {
+        fileTitle.setVisible(true);
         TreeItem<File> rootItem = new TreeItem<>(rootDir);
         rootItem.setExpanded(true);
         addAllChildren(rootItem);

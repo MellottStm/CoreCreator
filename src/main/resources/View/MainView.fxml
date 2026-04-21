@@ -13,22 +13,22 @@
         <!-- 顶部菜单栏（深色） -->
 <top>
 <MenuBar style="-fx-background-color: #252526; -fx-border-color: #333333;">
-    <Menu text="文件" style="-fx-text-fill: #000000;">
-        <MenuItem text="打开文件夹..." fx:id="openFolderMenuItem"/>
+    <Menu text="File" style="-fx-text-fill: #ffffff;">
+        <MenuItem text="open..." fx:id="openFolderMenuItem"/>
     </Menu>
 </MenuBar>
 </top>
 
         <!-- 主体三区域布局 -->
 <center>
-<SplitPane dividerPositions="0.22, 0.78"
+<SplitPane dividerPositions="0.22, 0.75"
            orientation="HORIZONTAL"
            style="-fx-background-color: #1e1e1e; -fx-padding: 0;">
 
     <!-- 左侧：文件目录树 -->
     <VBox fx:id="explorerVBox" spacing="5"
           style="-fx-background-color: #252526;">
-        <Label text="文件浏览器"
+        <Label fx:id="fileTitle" text="Project"
                style="-fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 10;"/>
         <TreeView fx:id="fileTreeView" VBox.vgrow="ALWAYS"/>
     </VBox>
