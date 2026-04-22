@@ -13,9 +13,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class MainController implements Initializable {
 
@@ -45,14 +43,13 @@ public class MainController implements Initializable {
 
     @FXML private Button sendButton;
 
-    private MonacoFX monacoFX;
-
     private File currentRootDir;
+
+    private Timer saveTimer;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // 1. 创建 Monaco 编辑器
-        monacoFX = new MonacoFX();
         mainSplitPane.setVisible(false);
         editorContainer.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldTab, newTab) -> {
@@ -63,7 +60,6 @@ public class MainController implements Initializable {
                 }
         );
         editorContainer.setVisible(false);
-        monacoFX.getEditor().setCurrentTheme("vs-dark");
         // 2. 文件树配置（显示文件名 + 图标）
         fileTreeView.setCellFactory(tv -> new TreeCell<File>() {
             @Override
@@ -90,6 +86,16 @@ public class MainController implements Initializable {
         });
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
+        //5. 自动保存文件
+        saveTimer = new Timer();
+        saveTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                openTabs.forEach((file,tab)->{
+                    saveTab(tab);
+                });
+            }
+        },0,800);
     }
 
     /** 打开文件夹对话框 */
@@ -176,6 +182,31 @@ public class MainController implements Initializable {
         });
         editorContainer.setVisible(true);
     }
+
+
+    private void saveTab (Tab tab) {
+        if (tab == null) {
+            return;
+        }
+        File file = tabToFile.get(tab);
+        MonacoFX editor = tabToEditor.get(tab);
+        if (file == null || editor == null) return;
+        try {
+            String content = editor.getEditor().getDocument().getText();  // 获取当前编辑器内容
+            Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
+            // 可选：标记为已保存（去掉 * 脏标记）
+            if (tab.getText().startsWith("*")) {
+                tab.setText(tab.getText().substring(1));
+            }
+            logger.info("文件保存成功: " + file.getAbsolutePath());
+        } catch (IOException e) {
+            logger.error("保存文件失败: " + file.getAbsolutePath(), e);
+            // 可以弹 Alert 提示用户
+        }
+
+    }
+
+
 
     private String getLanguageByExtension(String fileName) {
         String lower = fileName.toLowerCase();
