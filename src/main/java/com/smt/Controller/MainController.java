@@ -1,6 +1,7 @@
 package com.smt.Controller;
 
 import com.smt.Editor.EditorManager;
+import dev.langchain4j.model.openai.OpenAiChatModel;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -49,6 +50,8 @@ public class MainController implements Initializable {
     private Timer saveTimer;
 
     private Stage stage;
+
+    // --- 新增 AI 相关变量 ---
 
     public void setStage (Stage stage) {
         this.stage= stage;
