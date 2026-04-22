@@ -4,7 +4,6 @@ import eu.mihosoft.monacofx.MonacoFX;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
@@ -194,16 +193,11 @@ public class MainController implements Initializable {
         try {
             String content = editor.getEditor().getDocument().getText();  // 获取当前编辑器内容
             Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
-            // 可选：标记为已保存（去掉 * 脏标记）
-            if (tab.getText().startsWith("*")) {
-                tab.setText(tab.getText().substring(1));
-            }
             logger.info("文件保存成功: " + file.getAbsolutePath());
         } catch (IOException e) {
-            logger.error("保存文件失败: " + file.getAbsolutePath(), e);
+            logger.warn("保存文件失败: " + file.getAbsolutePath(), e);
             // 可以弹 Alert 提示用户
         }
-
     }
 
 
