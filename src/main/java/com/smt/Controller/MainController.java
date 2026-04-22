@@ -193,7 +193,6 @@ public class MainController implements Initializable {
         try {
             String content = editor.getEditor().getDocument().getText();  // 获取当前编辑器内容
             Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
-            logger.info("文件保存成功: " + file.getAbsolutePath());
         } catch (IOException e) {
             logger.warn("保存文件失败: " + file.getAbsolutePath(), e);
             // 可以弹 Alert 提示用户
