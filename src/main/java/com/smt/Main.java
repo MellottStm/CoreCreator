@@ -1,5 +1,6 @@
 package com.smt;
 
+import com.smt.Controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,7 +13,8 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/MainView.fxml"));
         Parent root = loader.load();
-
+        MainController mainController = loader.getController();
+        mainController.setStage(stage);
         Scene scene = new Scene(root, 1600, 900);
         stage.setTitle("CoreCreator");
         stage.setScene(scene);

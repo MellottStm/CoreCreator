@@ -2,11 +2,13 @@ package com.smt.Controller;
 
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +50,23 @@ public class MainController implements Initializable {
     private File currentRootDir;
 
     private Timer saveTimer;
+
+    private Stage stage;
+
+    public void setStage (Stage stage) {
+        this.stage= stage;
+        this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent windowEvent) {
+                if (saveTimer!=null) {
+                    saveTimer.purge();
+                    saveTimer.cancel();
+                    saveTimer = null;
+                }
+            }
+        });
+    }
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
