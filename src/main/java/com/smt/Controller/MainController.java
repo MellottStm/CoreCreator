@@ -1,5 +1,6 @@
 package com.smt.Controller;
 
+import com.smt.Editor.EditorManager;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
@@ -25,19 +26,11 @@ public class MainController implements Initializable {
     // FXML 注入的控件
     @FXML private MenuItem openFolderMenuItem;
 
+    @FXML private MenuItem openSettingMenuItem;
+
     @FXML private TreeView<File> fileTreeView;
 
     @FXML private TabPane editorContainer;
-
-    private final Map<File, Tab> openTabs = new HashMap<>();           // 文件 → Tab
-
-    private final Map<Tab, MonacoFX> tabToEditor = new HashMap<>();   // Tab → 编辑器实例
-
-    private final Map<Tab, File> tabToFile = new HashMap<>();         // Tab → 文件（便于保存等）
-
-    private final Map<Tab, String> lastSavedContent = new HashMap<>();
-
-    private final Map<Tab, Long> tabToLastModifiedTime = new HashMap<>();
 
     private final long delayCheckTime = 800;
 
@@ -112,57 +105,20 @@ public class MainController implements Initializable {
         });
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
+        openFolderMenuItem.setOnAction(e-> openSetting());
         //5. 自动保存文件
         saveTimer = new Timer();
         saveTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                checkEditorIsChange();
+                EditorManager.checkEditorIsChange();
             }
         },0,delayCheckTime);
     }
+    //打开设置对话框
+    private void openSetting () {
 
-
-    private void checkEditorIsChange () {
-        tabToEditor.forEach((tab,editor)->{
-            File file = tabToFile.get(tab);
-            if (file == null) return;
-            long diskLastModified = file.lastModified();
-            Long recordedLastModified = tabToLastModifiedTime.get(tab);
-            if (recordedLastModified != null && diskLastModified > recordedLastModified) {
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        logger.info("检测到文件外部修改: " + file.getAbsolutePath() + "，正在重新加载...");
-                        try {
-                            String newContent = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-                            String currentEditorContent = editor.getEditor().getDocument().getText();
-                            // 可选优化：只有内容真的不一样才刷新，防止光标跳动
-                            if (!newContent.equals(currentEditorContent)) {
-                                // 更新编辑器内容
-                                editor.getEditor().getDocument().setText(newContent);
-                                // 更新内部保存的内容记录
-                                lastSavedContent.put(tab, newContent);
-                            }
-                            // 【关键】更新时间戳记录，防止重复加载
-                            tabToLastModifiedTime.put(tab, diskLastModified);
-
-                        } catch (IOException e) {
-                            logger.warn("重新加载外部修改的文件失败: " + file.getAbsolutePath(), e);
-                        }
-                    }
-                });
-            } else {
-                String savedContent = lastSavedContent.get(tab);
-                String currentContent = editor.getEditor().getDocument().getText();
-                if (savedContent != null && !savedContent.equals(currentContent)) {
-                    logger.info("检测到文件:" + file.getAbsolutePath() + "发生更改,已保存!");
-                    saveTab(tab);
-                }
-            }
-        });
     }
-
 
     /** 打开文件夹对话框 */
     private void openFolder() {
@@ -210,24 +166,10 @@ public class MainController implements Initializable {
         }
     }
 
-    private MonacoFX getMonacoFXFromFile (File file) {
-        MonacoFX monacoFX = new MonacoFX();
-        monacoFX.getEditor().setCurrentTheme("vs-dark");
-        try {
-            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-            monacoFX.getEditor().getDocument().setText(content);
-            String lang = getLanguageByExtension(file.getName());
-            monacoFX.getEditor().setCurrentLanguage(lang);
-        } catch (IOException e) {
-            logger.warn("打开文件异常:" + e);
-        }
-        return monacoFX;
-    }
-
     /** 把文件内容加载到 Monaco 编辑器 */
     private void loadFileToEditor(File file) {
-        if (openTabs.containsKey(file)) {
-            Tab existingTab = openTabs.get(file);
+        if (EditorManager.openTabs.containsKey(file)) {
+            Tab existingTab = EditorManager.openTabs.get(file);
             editorContainer.getSelectionModel().select(existingTab);
             return;
         }
@@ -235,59 +177,26 @@ public class MainController implements Initializable {
         Tab tab = new Tab(file.getName());
         tab.setTooltip(new Tooltip(file.getAbsolutePath()));  // 鼠标悬停显示完整路径
         // 为每个 Tab 创建独立的 MonacoFX 编辑器
-        MonacoFX monacoFX = getMonacoFXFromFile(file);
+        MonacoFX monacoFX = EditorManager.getMonacoFXFromFile(file);
         tab.setContent(monacoFX);
         // 记录映射关系
-        openTabs.put(file, tab);
-        tabToEditor.put(tab, monacoFX);
-        tabToFile.put(tab, file);
-        lastSavedContent.put(tab,monacoFX.getEditor().getDocument().getText());
-        tabToLastModifiedTime.put(tab, file.lastModified());
+        EditorManager.openTabs.put(file, tab);
+        EditorManager.tabToEditor.put(tab, monacoFX);
+        EditorManager.tabToFile.put(tab, file);
+        EditorManager.lastSavedContent.put(tab,monacoFX.getEditor().getDocument().getText());
+        EditorManager.tabToLastModifiedTime.put(tab, file.lastModified());
         // 添加到 TabPane 并选中
         editorContainer.getTabs().add(tab);
         editorContainer.getSelectionModel().select(tab);
         // Tab 关闭事件：清理映射
         tab.setOnClosed(e -> {
-            openTabs.remove(file);
-            tabToEditor.remove(tab);
-            tabToFile.remove(tab);
-            lastSavedContent.remove(tab);
+            EditorManager.openTabs.remove(file);
+            EditorManager.tabToEditor.remove(tab);
+            EditorManager.tabToFile.remove(tab);
+            EditorManager.lastSavedContent.remove(tab);
             logger.info("已经关闭tab!");
         });
         editorContainer.setVisible(true);
-    }
-
-
-    private void saveTab (Tab tab) {
-        if (tab == null) {
-            return;
-        }
-        File file = tabToFile.get(tab);
-        MonacoFX editor = tabToEditor.get(tab);
-        if (file == null || editor == null) return;
-        try {
-            String content = editor.getEditor().getDocument().getText();  // 获取当前编辑器内容
-            Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
-            tabToLastModifiedTime.put(tab, file.lastModified());
-            lastSavedContent.put(tab, content);
-        } catch (IOException e) {
-            logger.warn("保存文件失败: " + file.getAbsolutePath(), e);
-            // 可以弹 Alert 提示用户
-        }
-    }
-
-
-
-    private String getLanguageByExtension(String fileName) {
-        String lower = fileName.toLowerCase();
-        if (lower.endsWith(".java")) return "java";
-        if (lower.endsWith(".js")) return "javascript";
-        if (lower.endsWith(".py")) return "python";
-        if (lower.endsWith(".c") || lower.endsWith(".cpp") || lower.endsWith(".h")) return "c";
-        if (lower.endsWith(".html")) return "html";
-        if (lower.endsWith(".xml") || lower.endsWith(".fxml")) return "xml";
-        if (lower.endsWith(".json")) return "json";
-        return "plaintext";
     }
 
 }
