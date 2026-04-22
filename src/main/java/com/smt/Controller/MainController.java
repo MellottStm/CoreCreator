@@ -62,6 +62,7 @@ public class MainController implements Initializable {
                     saveTimer.purge();
                     saveTimer.cancel();
                     saveTimer = null;
+                    logger.info("已关闭Main窗口!");
                 }
             }
         });
