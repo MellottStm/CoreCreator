@@ -1,6 +1,7 @@
 package com.smt.Controller;
 
 import eu.mihosoft.monacofx.MonacoFX;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -104,6 +105,7 @@ public class MainController implements Initializable {
         tabToEditor.forEach((tab,editor)->{
             if (!lastSavedContent.get(tab).equals(editor.getEditor().getDocument().getText())) {
                 logger.info("检测到文件:" + tabToFile.get(tab).getAbsolutePath() + "发生更改,已保存!");
+                lastSavedContent.put(tab,editor.getEditor().getDocument().getText());
                 saveTab(tab);
             }
         });
@@ -156,6 +158,20 @@ public class MainController implements Initializable {
         }
     }
 
+    private MonacoFX getMonacoFXFromFile (File file) {
+        MonacoFX monacoFX = new MonacoFX();
+        monacoFX.getEditor().setCurrentTheme("vs-dark");
+        try {
+            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            monacoFX.getEditor().getDocument().setText(content);
+            String lang = getLanguageByExtension(file.getName());
+            monacoFX.getEditor().setCurrentLanguage(lang);
+        } catch (IOException e) {
+            logger.warn("打开文件异常:" + e);
+        }
+        return monacoFX;
+    }
+
     /** 把文件内容加载到 Monaco 编辑器 */
     private void loadFileToEditor(File file) {
         if (openTabs.containsKey(file)) {
@@ -167,18 +183,8 @@ public class MainController implements Initializable {
         Tab tab = new Tab(file.getName());
         tab.setTooltip(new Tooltip(file.getAbsolutePath()));  // 鼠标悬停显示完整路径
         // 为每个 Tab 创建独立的 MonacoFX 编辑器
-        MonacoFX monacoFX = new MonacoFX();
-        monacoFX.getEditor().setCurrentTheme("vs-dark");
-        try {
-            String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-            monacoFX.getEditor().getDocument().setText(content);
-            String lang = getLanguageByExtension(file.getName());
-            monacoFX.getEditor().setCurrentLanguage(lang);
-        } catch (IOException e) {
-            logger.warn("打开文件异常:" + e);
-        }
+        MonacoFX monacoFX = getMonacoFXFromFile(file);
         tab.setContent(monacoFX);
-
         // 记录映射关系
         openTabs.put(file, tab);
         tabToEditor.put(tab, monacoFX);
@@ -193,6 +199,7 @@ public class MainController implements Initializable {
             tabToEditor.remove(tab);
             tabToFile.remove(tab);
             lastSavedContent.remove(tab);
+            logger.info("已经关闭tab!");
         });
         editorContainer.setVisible(true);
     }
