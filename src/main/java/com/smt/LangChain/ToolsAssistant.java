@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface ToolsAssistant {
 
-    TokenStream intentStream(String query);
-
     String intent(String query);
 
 }

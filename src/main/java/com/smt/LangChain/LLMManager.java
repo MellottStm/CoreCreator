@@ -21,6 +21,7 @@ public class LLMManager {
 
     private static final Logger logger = Logger.getLogger(TAG);
 
+    private String dirPath;
     // 单例模式或静态工厂方法
     public OpenAiChatModel createModel() {
         if (Configure.LLM_NAME != null && Configure.LLM_URL != null && Configure.API_KEY != null) {
@@ -35,7 +36,8 @@ public class LLMManager {
 
     private ToolsAssistant assistant;
 
-    public LLMManager () {
+    public LLMManager (String dirPath) {
+        this.dirPath = dirPath;
         LLMTools llmTools = new LLMTools();
         assistant = AiServices.builder(ToolsAssistant.class)
                 .chatModel(createModel())

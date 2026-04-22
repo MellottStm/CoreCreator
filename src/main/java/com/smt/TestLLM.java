@@ -2,18 +2,20 @@ package com.smt;
 
 import com.smt.LangChain.LLMManager;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.smt.LangChain.ToolsPrompt;
+import org.apache.log4j.Logger;
 
 
 import java.io.File;
 
 public class TestLLM {
 
-    private static final Logger log = LoggerFactory.getLogger(TestLLM.class);
+    public static String TAG = "TestLLM";
+
+    public final static Logger logger = Logger.getLogger(TAG);
 
     public static void main(String[] args) {
-
+        logger.info(ToolsPrompt.getFilePathAndContentPrompt("F:\\ATest\\ATest\\src\\main\\java"));
     }
 
 }
