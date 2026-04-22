@@ -37,6 +37,10 @@ public class MainController implements Initializable {
 
     private final Map<Tab, String> lastSavedContent = new HashMap<>();
 
+    private final Map<Tab, Long> tabToLastModifiedTime = new HashMap<>();
+
+    private final long delayCheckTime = 800;
+
     private Tab currentTab;  // 当前选中的 Tab
 
     @FXML private SplitPane mainSplitPane;
@@ -113,20 +117,48 @@ public class MainController implements Initializable {
         saveTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                openTabs.forEach((file,tab)->{
-                    checkEditorIsChange();
-                });
+                checkEditorIsChange();
             }
-        },0,800);
+        },0,delayCheckTime);
     }
 
 
     private void checkEditorIsChange () {
         tabToEditor.forEach((tab,editor)->{
-            if (!lastSavedContent.get(tab).equals(editor.getEditor().getDocument().getText())) {
-                logger.info("检测到文件:" + tabToFile.get(tab).getAbsolutePath() + "发生更改,已保存!");
-                lastSavedContent.put(tab,editor.getEditor().getDocument().getText());
-                saveTab(tab);
+            File file = tabToFile.get(tab);
+            if (file == null) return;
+            long diskLastModified = file.lastModified();
+            Long recordedLastModified = tabToLastModifiedTime.get(tab);
+            if (recordedLastModified != null && diskLastModified > recordedLastModified) {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        logger.info("检测到文件外部修改: " + file.getAbsolutePath() + "，正在重新加载...");
+                        try {
+                            String newContent = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+                            String currentEditorContent = editor.getEditor().getDocument().getText();
+                            // 可选优化：只有内容真的不一样才刷新，防止光标跳动
+                            if (!newContent.equals(currentEditorContent)) {
+                                // 更新编辑器内容
+                                editor.getEditor().getDocument().setText(newContent);
+                                // 更新内部保存的内容记录
+                                lastSavedContent.put(tab, newContent);
+                            }
+                            // 【关键】更新时间戳记录，防止重复加载
+                            tabToLastModifiedTime.put(tab, diskLastModified);
+
+                        } catch (IOException e) {
+                            logger.warn("重新加载外部修改的文件失败: " + file.getAbsolutePath(), e);
+                        }
+                    }
+                });
+            } else {
+                String savedContent = lastSavedContent.get(tab);
+                String currentContent = editor.getEditor().getDocument().getText();
+                if (savedContent != null && !savedContent.equals(currentContent)) {
+                    logger.info("检测到文件:" + file.getAbsolutePath() + "发生更改,已保存!");
+                    saveTab(tab);
+                }
             }
         });
     }
@@ -210,6 +242,7 @@ public class MainController implements Initializable {
         tabToEditor.put(tab, monacoFX);
         tabToFile.put(tab, file);
         lastSavedContent.put(tab,monacoFX.getEditor().getDocument().getText());
+        tabToLastModifiedTime.put(tab, file.lastModified());
         // 添加到 TabPane 并选中
         editorContainer.getTabs().add(tab);
         editorContainer.getSelectionModel().select(tab);
@@ -235,6 +268,8 @@ public class MainController implements Initializable {
         try {
             String content = editor.getEditor().getDocument().getText();  // 获取当前编辑器内容
             Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
+            tabToLastModifiedTime.put(tab, file.lastModified());
+            lastSavedContent.put(tab, content);
         } catch (IOException e) {
             logger.warn("保存文件失败: " + file.getAbsolutePath(), e);
             // 可以弹 Alert 提示用户
