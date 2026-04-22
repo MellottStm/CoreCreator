@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
@@ -25,7 +27,15 @@ public class MainController implements Initializable {
 
     @FXML private TreeView<File> fileTreeView;
 
-    @FXML private StackPane editorContainer;
+    @FXML private TabPane editorContainer;
+
+    private final Map<File, Tab> openTabs = new HashMap<>();           // 文件 → Tab
+
+    private final Map<Tab, MonacoFX> tabToEditor = new HashMap<>();   // Tab → 编辑器实例
+
+    private final Map<Tab, File> tabToFile = new HashMap<>();         // Tab → 文件（便于保存等）
+
+    private Tab currentTab;  // 当前选中的 Tab
 
     @FXML private SplitPane mainSplitPane;
 
@@ -44,8 +54,15 @@ public class MainController implements Initializable {
         // 1. 创建 Monaco 编辑器
         monacoFX = new MonacoFX();
         mainSplitPane.setVisible(false);
+        editorContainer.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldTab, newTab) -> {
+                    if (newTab != null) {
+                        currentTab = newTab;
+                        // 这里可以做一些额外操作，比如更新状态栏等
+                    }
+                }
+        );
         editorContainer.setVisible(false);
-        editorContainer.getChildren().add(monacoFX);
         monacoFX.getEditor().setCurrentTheme("vs-dark");
         // 2. 文件树配置（显示文件名 + 图标）
         fileTreeView.setCellFactory(tv -> new TreeCell<File>() {
@@ -63,9 +80,12 @@ public class MainController implements Initializable {
         });
 
         // 3. 点击文件自动加载到编辑器
-        fileTreeView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && newVal.getValue() != null && newVal.getValue().isFile()) {
-                loadFileToEditor(newVal.getValue());
+        fileTreeView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {  // 双击
+                TreeItem<File> selectedItem = fileTreeView.getSelectionModel().getSelectedItem();
+                if (selectedItem != null && selectedItem.getValue() != null && selectedItem.getValue().isFile()) {
+                    loadFileToEditor(selectedItem.getValue());
+                }
             }
         });
         // 4. 菜单 - 打开文件夹
@@ -120,16 +140,41 @@ public class MainController implements Initializable {
 
     /** 把文件内容加载到 Monaco 编辑器 */
     private void loadFileToEditor(File file) {
+        if (openTabs.containsKey(file)) {
+            Tab existingTab = openTabs.get(file);
+            editorContainer.getSelectionModel().select(existingTab);
+            return;
+        }
+        // 创建新 Tab
+        Tab tab = new Tab(file.getName());
+        tab.setTooltip(new Tooltip(file.getAbsolutePath()));  // 鼠标悬停显示完整路径
+        // 为每个 Tab 创建独立的 MonacoFX 编辑器
+        MonacoFX monacoFX = new MonacoFX();
+        monacoFX.getEditor().setCurrentTheme("vs-dark");
         try {
-            editorContainer.setVisible(true);
             String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
             monacoFX.getEditor().getDocument().setText(content);
-            // 根据文件后缀自动设置语言
             String lang = getLanguageByExtension(file.getName());
             monacoFX.getEditor().setCurrentLanguage(lang);
         } catch (IOException e) {
             logger.warn("打开文件异常:" + e);
         }
+        tab.setContent(monacoFX);
+
+        // 记录映射关系
+        openTabs.put(file, tab);
+        tabToEditor.put(tab, monacoFX);
+        tabToFile.put(tab, file);
+        // 添加到 TabPane 并选中
+        editorContainer.getTabs().add(tab);
+        editorContainer.getSelectionModel().select(tab);
+        // Tab 关闭事件：清理映射
+        tab.setOnClosed(e -> {
+            openTabs.remove(file);
+            tabToEditor.remove(tab);
+            tabToFile.remove(tab);
+        });
+        editorContainer.setVisible(true);
     }
 
     private String getLanguageByExtension(String fileName) {

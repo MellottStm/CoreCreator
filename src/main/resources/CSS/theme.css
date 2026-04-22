@@ -77,3 +77,50 @@
 .scroll-bar {
     -fx-background-color: #252526;
 }
+
+/* ==================== 黑底 TabPane（类似 IntelliJ IDEA / VS Code） ==================== */
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #1e1e1e;     /* Tab 栏整体背景 */
+    -fx-border-color: transparent;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #2d2d2d;     /* 未选中 Tab 背景 */
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 8 12 8 12;
+    -fx-text-fill: #cccccc;            /* 文字颜色 */
+    -fx-font-size: 12px;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #1e1e1e;     /* 选中 Tab 与编辑器背景一致 */
+    -fx-border-color: #007acc transparent transparent transparent;   /* 顶部蓝色高亮线（IDEA 风格） */
+    -fx-border-width: 2 0 0 0;
+    -fx-text-fill: #ffffff;            /* 选中时文字更亮 */
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: inherit;            /* 跟随上面设置的颜色 */
+}
+
+/* 关闭按钮优化 */
+.tab-pane .tab .tab-close-button {
+    -fx-background-color: red;
+}
+
+.tab-pane .tab:selected .tab-close-button {
+    -fx-text-fill: #ffffff;
+}
+
+/* TabPane 整体与编辑器融合 */
+.tab-pane {
+    -fx-background-color: #1e1e1e;
+    -fx-tab-min-height: 32px;   /* Tab 高度更紧凑，像 IDEA */
+}
+
+/* 鼠标悬停效果 */
+.tab-pane .tab:hover {
+    -fx-background-color: #3c3c3c;
+}

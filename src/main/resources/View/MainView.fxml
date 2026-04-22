@@ -14,6 +14,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TabPane?>
 <BorderPane prefHeight="553.0" prefWidth="833.0" style="-fx-background-color: #1e1e1e;" stylesheets="@../CSS/theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.smt.Controller.MainController">
 
         <!-- 顶部菜单栏（深色） -->
@@ -36,7 +37,7 @@
     </VBox>
 
     <!-- 中间：Monaco 编辑器 -->
-    <StackPane fx:id="editorContainer" prefHeight="526.0" prefWidth="414.0" style="-fx-background-color: #1e1e1e;" />
+    <TabPane fx:id="editorContainer" prefHeight="526.0" prefWidth="414.0" style="-fx-background-color: #1e1e1e;" />
     <!-- 右侧：AI助手 -->
         <VBox fx:id="aiView"
               spacing="8"
