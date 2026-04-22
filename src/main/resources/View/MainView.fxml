@@ -90,7 +90,7 @@
                 <!-- 发送按钮 -->
                 <Button fx:id="sendButton"
                         text="➤"
-                        prefWidth="50"
+                        prefWidth="40"
                         prefHeight="30"
                         style="-fx-background-color: #007acc;
                        -fx-text-fill: white;

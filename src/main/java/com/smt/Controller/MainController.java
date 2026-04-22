@@ -5,11 +5,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.apache.log4j.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -46,8 +44,8 @@ public class MainController implements Initializable {
         // 1. 创建 Monaco 编辑器
         monacoFX = new MonacoFX();
         mainSplitPane.setVisible(false);
+        editorContainer.setVisible(false);
         editorContainer.getChildren().add(monacoFX);
-        monacoFX.getEditor().setCurrentLanguage("java");
         monacoFX.getEditor().setCurrentTheme("vs-dark");
         // 2. 文件树配置（显示文件名 + 图标）
         fileTreeView.setCellFactory(tv -> new TreeCell<File>() {
@@ -70,7 +68,6 @@ public class MainController implements Initializable {
                 loadFileToEditor(newVal.getValue());
             }
         });
-
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
     }
@@ -81,7 +78,6 @@ public class MainController implements Initializable {
         chooser.setTitle("选择项目文件夹");
         Stage stage = (Stage) editorContainer.getScene().getWindow();
         File selectedDir = chooser.showDialog(stage);
-
         if (selectedDir != null && selectedDir.isDirectory()) {
             currentRootDir = selectedDir;
             buildFileTree(selectedDir);
@@ -94,7 +90,6 @@ public class MainController implements Initializable {
         TreeItem<File> rootItem = new TreeItem<>(rootDir);
         rootItem.setExpanded(true);
         addAllChildren(rootItem);
-
         fileTreeView.setRoot(rootItem);
         fileTreeView.setShowRoot(true);
     }
@@ -126,16 +121,14 @@ public class MainController implements Initializable {
     /** 把文件内容加载到 Monaco 编辑器 */
     private void loadFileToEditor(File file) {
         try {
+            editorContainer.setVisible(true);
             String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
             monacoFX.getEditor().getDocument().setText(content);
-
             // 根据文件后缀自动设置语言
             String lang = getLanguageByExtension(file.getName());
             monacoFX.getEditor().setCurrentLanguage(lang);
-
-
         } catch (IOException e) {
-
+            logger.warn("打开文件异常:" + e);
         }
     }
 
