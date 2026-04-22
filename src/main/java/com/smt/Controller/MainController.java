@@ -32,6 +32,8 @@ public class MainController implements Initializable {
 
     private final Map<Tab, File> tabToFile = new HashMap<>();         // Tab → 文件（便于保存等）
 
+    private final Map<Tab, String> lastSavedContent = new HashMap<>();
+
     private Tab currentTab;  // 当前选中的 Tab
 
     @FXML private SplitPane mainSplitPane;
@@ -91,11 +93,22 @@ public class MainController implements Initializable {
             @Override
             public void run() {
                 openTabs.forEach((file,tab)->{
-                    saveTab(tab);
+                    checkEditorIsChange();
                 });
             }
         },0,800);
     }
+
+
+    private void checkEditorIsChange () {
+        tabToEditor.forEach((tab,editor)->{
+            if (!lastSavedContent.get(tab).equals(editor.getEditor().getDocument().getText())) {
+                logger.info("检测到文件:" + tabToFile.get(tab).getAbsolutePath() + "发生更改,已保存!");
+                saveTab(tab);
+            }
+        });
+    }
+
 
     /** 打开文件夹对话框 */
     private void openFolder() {
@@ -170,6 +183,7 @@ public class MainController implements Initializable {
         openTabs.put(file, tab);
         tabToEditor.put(tab, monacoFX);
         tabToFile.put(tab, file);
+        lastSavedContent.put(tab,monacoFX.getEditor().getDocument().getText());
         // 添加到 TabPane 并选中
         editorContainer.getTabs().add(tab);
         editorContainer.getSelectionModel().select(tab);
@@ -178,6 +192,7 @@ public class MainController implements Initializable {
             openTabs.remove(file);
             tabToEditor.remove(tab);
             tabToFile.remove(tab);
+            lastSavedContent.remove(tab);
         });
         editorContainer.setVisible(true);
     }
