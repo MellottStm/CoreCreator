@@ -11,6 +11,7 @@ import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.service.AiServices;
+import dev.langchain4j.service.TokenStream;
 import dev.langchain4j.service.tool.ToolExecution;
 import dev.langchain4j.service.tool.ToolProvider;
 import dev.langchain4j.service.tool.ToolProviderResult;
@@ -43,6 +44,18 @@ public class LLMManager {
         return null;
     }
 
+    public OpenAiStreamingChatModel createStreamModel () {
+        if (Configure.LLM_NAME != null && Configure.LLM_URL != null && Configure.API_KEY != null) {
+            return OpenAiStreamingChatModel.builder()
+                    .apiKey(Configure.API_KEY)
+                    .modelName(Configure.LLM_NAME)
+                    .baseUrl(Configure.LLM_URL)
+                    .build();
+        }
+        return null;
+    }
+
+
     private LLMTools llmTools = new LLMTools();
 
     private ToolsAssistant assistant;
@@ -52,14 +65,20 @@ public class LLMManager {
         LLMTools llmTools = new LLMTools();
         assistant = AiServices.builder(ToolsAssistant.class)
                 .chatModel(createModel())
+                .streamingChatModel(createStreamModel())
                 .build();
         chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMPrompt));
         chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
     }
 
-    public String requestLLM (List<ChatMessage> chatMessageList) {
+    public String chat (List<ChatMessage> chatMessageList) {
         this.chatMessageList.addAll(chatMessageList);
         return assistant.chat(this.chatMessageList);
+    }
+
+    public TokenStream requestLLM (List<ChatMessage> chatMessageList) {
+        this.chatMessageList.addAll(chatMessageList);
+        return assistant.requestLLM(this.chatMessageList);
     }
 
 
