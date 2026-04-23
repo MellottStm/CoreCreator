@@ -19,6 +19,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -139,6 +140,15 @@ public class MainController implements Initializable {
                 sendMsg();
             }
         });
+        //7. 回车发送消息
+        promptField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                    sendMsg();
+                }
+            }
+        });
         initData();
     }
 
@@ -153,7 +163,7 @@ public class MainController implements Initializable {
 
 
     private void sendMsg () {
-        if (promptField.getText().isEmpty()) {
+        if (promptField.getText() == null || promptField.getText().isBlank() || promptField.getText().isEmpty()) {
             Toast.makeText(stage, "输入框不能为空!", 1000);
             return;
         }
@@ -163,8 +173,10 @@ public class MainController implements Initializable {
             return;
         }
 
+
         chatMessageList.add(UserMessage.from(promptField.getText()));
         promptField.setText("");
+
 
 
     }
