@@ -15,6 +15,7 @@
 
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.web.WebView?>
 <BorderPane prefHeight="553.0" prefWidth="833.0" style="-fx-background-color: #1e1e1e;" stylesheets="@../CSS/theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.smt.Controller.MainController">
 
         <!-- 顶部菜单栏（深色） -->
@@ -58,9 +59,7 @@
                        -fx-background-color: transparent;
                        -fx-border-color: transparent;">
 
-                <TextArea fx:id="chatArea"
-                          editable="false"
-                          wrapText="true"
+                <WebView fx:id="chatWebView"
                           style="-fx-control-inner-background: #1e1e1e;
                          -fx-text-fill: #d4d4d4;
                          -fx-font-family: 'Consolas', monospace;

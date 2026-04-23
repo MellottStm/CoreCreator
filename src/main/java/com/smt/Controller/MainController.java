@@ -3,6 +3,7 @@ package com.smt.Controller;
 import com.alibaba.fastjson.JSONObject;
 import com.smt.Cache.CacheManager;
 import com.smt.Cache.Configure;
+import com.smt.Editor.ChatRenderer;
 import com.smt.Editor.EditorManager;
 import com.smt.LangChain.LLMManager;
 import com.smt.Main;
@@ -20,6 +21,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -51,7 +54,7 @@ public class MainController implements Initializable {
 
     @FXML private SplitPane mainSplitPane;
 
-    @FXML private TextArea chatArea;
+    @FXML private WebView chatWebView;
 
     @FXML private TextArea promptField;
 
@@ -67,7 +70,8 @@ public class MainController implements Initializable {
 
     private List<ChatMessage> chatMessageList = new ArrayList<>();
 
-    // --- 新增 AI 相关变量 ---
+    // 用于构建 HTML 内容的 StringBuilder
+    private final StringBuilder chatHistoryHtml = new StringBuilder();
 
     public void setStage (Stage stage) {
         this.stage= stage;
@@ -88,6 +92,9 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // 1. 创建 Monaco 编辑器
+        WebEngine engine = chatWebView.getEngine();
+        // 加载空白页面，设置基础样式
+        engine.loadContent("<html><head><style>body{background:#1e1e1e; color:#d4d4d4; font-family: sans-serif; padding: 10px;}</style></head><body>欢迎使用 AI 助手</body></html>");
         mainSplitPane.setVisible(false);
         editorContainer.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldTab, newTab) -> {
@@ -175,10 +182,57 @@ public class MainController implements Initializable {
 
 
         chatMessageList.add(UserMessage.from(promptField.getText()));
-        promptField.setText("");
+        appendMessage(promptField.getText(), true);
+        promptField.clear();
+        simulateAiResponse("java");
 
 
+    }
 
+    private void appendMessage(String text, boolean isUser) {
+        // 使用工具类将文本转为 HTML
+        String htmlFragment = ChatRenderer.render(text, isUser);
+
+        // 提取 body 内容并追加到历史记录
+        // 简单处理：直接追加 div，实际生产中可能需要更严谨的 HTML 解析
+        // 这里我们直接操作 WebView 的 DOM 或者重新加载内容
+        // 为了简单起见，我们重新加载整个内容字符串
+
+        Platform.runLater(() -> {
+            chatHistoryHtml.append(htmlFragment.replace("<html><head>.*</head><body>", "").replace("</body></html>", ""));
+            String finalHtml = "<html><head>" + ChatRenderer.CSS_STYLE + "</head><body>" + chatHistoryHtml + "</body></html>";
+
+            WebEngine engine = chatWebView.getEngine();
+            engine.loadContent(finalHtml);
+
+            // 自动滚动到底部
+            engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+        });
+    }
+
+    // --- 模拟 AI 回复 (用于演示代码高亮效果) ---
+    private void simulateAiResponse(String input) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000); // 模拟网络延迟
+
+                String responseText;
+                if (input.contains("java")) {
+                    responseText = "没问题，这是你要的 Java 快速排序代码：\n\n```java\npublic class QuickSort {\n    public static void sort(int[] arr, int low, int high) {\n        if (low < high) {\n            int pi = partition(arr, low, high);\n            sort(arr, low, pi - 1);\n            sort(arr, pi + 1, high);\n        }\n    }\n    // ... 省略部分代码\n}\n```";
+                } else if (input.contains("python")) {
+                    responseText = "这是 Python 的实现：\n\n```python\ndef quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quick_sort(left) + middle + quick_sort(right)\n```";
+                } else if (input.contains("json")) {
+                    responseText = "这是一个 JSON 配置示例：\n\n```json\n{\n  \"name\": \"MyApp\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"langchain4j\": \"0.34.0\"\n  }\n}\n```";
+                } else {
+                    responseText = "我收到了你的消息：“" + input + "”。\n你可以问我关于 Java, Python, JSON 等代码的问题，我会高亮显示。";
+                }
+
+                appendMessage(responseText, false);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
 
