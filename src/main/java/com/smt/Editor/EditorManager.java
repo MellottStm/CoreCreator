@@ -33,6 +33,7 @@ public class EditorManager {
         if (lower.endsWith(".java")) return "java";
         if (lower.endsWith(".js")) return "javascript";
         if (lower.endsWith(".py")) return "python";
+        if (lower.endsWith(".ts")) return "Typescript";
         if (lower.endsWith(".c") || lower.endsWith(".cpp") || lower.endsWith(".h")) return "c";
         if (lower.endsWith(".html")) return "html";
         if (lower.endsWith(".xml") || lower.endsWith(".fxml")) return "xml";
