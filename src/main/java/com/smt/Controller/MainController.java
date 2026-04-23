@@ -12,6 +12,7 @@ import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -190,23 +191,27 @@ public class MainController implements Initializable {
     }
 
     private void appendMessage(String text, boolean isUser) {
-        // 使用工具类将文本转为 HTML
-        String htmlFragment = ChatRenderer.render(text, isUser);
-
-        // 提取 body 内容并追加到历史记录
-        // 简单处理：直接追加 div，实际生产中可能需要更严谨的 HTML 解析
-        // 这里我们直接操作 WebView 的 DOM 或者重新加载内容
-        // 为了简单起见，我们重新加载整个内容字符串
+        // 1. 生成当前消息的 HTML 片段
+        String messageHtml = ChatRenderer.render(text, isUser);
 
         Platform.runLater(() -> {
-            chatHistoryHtml.append(htmlFragment.replace("<html><head>.*</head><body>", "").replace("</body></html>", ""));
+            // 2. 追加到历史记录
+            chatHistoryHtml.append(messageHtml);
+
+            // 3. 重新加载内容
+            // 注意：这里简单地将所有历史记录重新包装进 HTML 标签
             String finalHtml = "<html><head>" + ChatRenderer.CSS_STYLE + "</head><body>" + chatHistoryHtml + "</body></html>";
 
             WebEngine engine = chatWebView.getEngine();
             engine.loadContent(finalHtml);
 
-            // 自动滚动到底部
-            engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+            // 4. 强制滚动到底部
+            // 使用 Platform.runLater 确保在页面渲染完成后执行
+            engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+                }
+            });
         });
     }
 
