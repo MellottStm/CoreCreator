@@ -30,7 +30,7 @@ public class TestLLM {
             JSONObject json =  resJson.getJSONArray("result").getJSONObject(i);
             logger.info("输出的内容:" + json.getString("content"));
             logger.info("输出的路径:" + json.getString("path"));
-            logger.info("更改的路径:" + json.getString("type"));
+            logger.info("更改的类型:" + json.getString("type"));
         }
     }
 
