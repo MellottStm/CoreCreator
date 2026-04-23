@@ -136,7 +136,7 @@ public class MainController implements Initializable {
         sendButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
+                sendMsg();
             }
         });
         initData();
@@ -153,12 +153,19 @@ public class MainController implements Initializable {
 
 
     private void sendMsg () {
-       chatMessageList.add(UserMessage.from(promptField.getText()));
-       promptField.setText("");
-       if (llmManager.createModel() == null) {
-           Toast.makeText(stage,"未设置大模型参数!",1000);
-           return;
-       }
+        if (promptField.getText().isEmpty()) {
+            Toast.makeText(stage, "输入框不能为空!", 1000);
+            return;
+        }
+
+        if (llmManager.createModel() == null) {
+            Toast.makeText(stage, "未设置大模型参数!", 1000);
+            return;
+        }
+
+        chatMessageList.add(UserMessage.from(promptField.getText()));
+        promptField.setText("");
+
 
     }
 
