@@ -24,7 +24,7 @@ public class TestLLM {
     public static void main(String[] args) {
         LLMManager llmManager = new LLMManager("F:\\ATest\\ATest");
         List<ChatMessage> chatMessageList = new ArrayList<>();
-        chatMessageList.add(UserMessage.from("帮我写一个查询例程，用户输入字符串，然后从列表查询包含字符串的结构!"));
+        chatMessageList.add(UserMessage.from("帮我写一个查询例程，新建一个用户类（单独一个文件），用户类有一个id属性，我希望输入id，输出对应id的用户!"));
         JSONObject resJson = JSONObject.parseObject(llmManager.requestLLM(chatMessageList));
         for (int i = 0;i < resJson.getJSONArray("result").size();i++) {
             JSONObject json =  resJson.getJSONArray("result").getJSONObject(i);

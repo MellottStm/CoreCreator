@@ -86,8 +86,8 @@ public class ToolsPrompt {
             "更改的文件路径是F:\\ATest\\ATest\\src\\main\\java\\com\\smt\\Main.java\n" +
             "更改类型是update\n" +
             "三、输出的内容必须满足用户的请求\n" +
-            "四、输出更改的文件完整路径，该路径必须在用户的项目根路径内。\n" +
-            "五、更改的类型有add、del、update、none，这些字段的规则如下，必须严格遵守规则进行输出\n" +
+            "四、输出更改的文件完整路径，该路径必须在用户的项目根路径内，如果没有要更改的文件，则输出none\n" +
+            "五、更改的类型有add、del、update、none，这些字段的规则如下，必须严格遵守规则进行输出：\n" +
             "1、add表示新增的文件\n" +
             "2、del表示删除的文件\n" +
             "3、update表示更改的文件\n" +
