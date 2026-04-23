@@ -1,5 +1,6 @@
 package com.smt;
 
+import com.smt.Cache.CacheManager;
 import com.smt.Controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

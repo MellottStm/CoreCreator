@@ -1,12 +1,23 @@
 package com.smt.Controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.smt.Cache.CacheManager;
+import com.smt.Cache.Configure;
 import com.smt.Editor.EditorManager;
+import com.smt.LangChain.LLMManager;
+import com.smt.Main;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
@@ -50,6 +61,10 @@ public class MainController implements Initializable {
     private Timer saveTimer;
 
     private Stage stage;
+
+    private LLMManager llmManager;
+
+    private List<ChatMessage> chatMessageList = new ArrayList<>();
 
     // --- 新增 AI 相关变量 ---
 
@@ -108,7 +123,7 @@ public class MainController implements Initializable {
         });
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
-        openFolderMenuItem.setOnAction(e-> openSetting());
+        openSettingMenuItem.setOnAction(e-> openSetting());
         //5. 自动保存文件
         saveTimer = new Timer();
         saveTimer.schedule(new TimerTask() {
@@ -117,10 +132,52 @@ public class MainController implements Initializable {
                 EditorManager.checkEditorIsChange();
             }
         },0,delayCheckTime);
-    }
-    //打开设置对话框
-    private void openSetting () {
+        //6. AI助手发送按钮
+        sendButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
 
+            }
+        });
+        initData();
+    }
+
+    private void initData () {
+        JSONObject loadJson = CacheManager.loadCache();
+        if (loadJson != null) {
+            Configure.API_KEY = loadJson.getString("API_KEY");
+            Configure.LLM_URL = loadJson.getString("LLM_URL");
+            Configure.LLM_NAME = loadJson.getString("LLM_NAME");
+        }
+    }
+
+
+    private void sendMsg () {
+       chatMessageList.add(UserMessage.from(promptField.getText()));
+       promptField.setText("");
+       if (llmManager.createModel() == null) {
+           Toast.makeText(stage,"未设置大模型参数!",1000);
+           return;
+       }
+
+    }
+
+
+    //打开设置对话框
+    private void openSetting ()  {
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/SettingsView.fxml"));
+            Parent root = loader.load();
+            SettingsController settingsController = loader.getController();
+            Stage settingsStage = new Stage();
+            settingsController.setStage(settingsStage);
+            Scene scene = new Scene(root, 480, 280);
+            settingsStage.setTitle("Settings");
+            settingsStage.setScene(scene);
+            settingsStage.show();
+        }catch (Exception e) {
+            logger.warn("打开Setting异常:" + e);
+        }
     }
 
     /** 打开文件夹对话框 */
@@ -132,6 +189,7 @@ public class MainController implements Initializable {
         if (selectedDir != null && selectedDir.isDirectory()) {
             currentRootDir = selectedDir;
             buildFileTree(selectedDir);
+            llmManager = new LLMManager(selectedDir.getPath());
         }
     }
 

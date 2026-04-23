@@ -1,6 +1,7 @@
 package com.smt.Cache;
 
 import com.alibaba.fastjson.JSONObject;
+import com.smt.Controller.Toast;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -19,9 +20,13 @@ public class CacheManager {
 
     public static void saveConfig (String API_KEY,String LLM_NAME,String LLM_URL) {
         try {
+            if (API_KEY.isEmpty() || LLM_NAME.isEmpty() || LLM_URL.isEmpty()) {
+                return;
+            }
             Configure.API_KEY = API_KEY;
             Configure.LLM_NAME = LLM_NAME;
             Configure.LLM_URL = LLM_URL;
+
             // 更新数据
             // 确保目录存在
             File file = new File(CACHE_FILE);
