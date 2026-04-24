@@ -82,6 +82,12 @@ public class MainController implements Initializable {
     // 用于构建 HTML 内容的 StringBuilder
     private final StringBuilder chatHistoryHtml = new StringBuilder();
 
+    // 标记 WebView 是否已经初始化过 HTML 结构
+    private boolean isWebViewInitialized = false;
+
+    // 新增：用于存储展开状态的路径集合
+    private Set<String> expandedPaths = new HashSet<>();
+
     public void setStage (Stage stage) {
         this.stage= stage;
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -237,7 +243,7 @@ public class MainController implements Initializable {
         // 2. 检测新增：当前有，但快照里没有
         for (String path : currentPaths) {
             if (!filePathSnapshot.contains(path)) {
-                System.out.println("🟢 检测到新增: " + path);
+                System.out.println("检测到新增: " + path);
                 hasChanged = true;
             }
         }
@@ -245,7 +251,7 @@ public class MainController implements Initializable {
         // 3. 检测删除：快照里有，但当前没有了
         for (String path : filePathSnapshot) {
             if (!currentPaths.contains(path)) {
-                System.out.println("🔴 检测到删除: " + path);
+                System.out.println("检测到删除: " + path);
                 hasChanged = true;
             }
         }
@@ -256,7 +262,7 @@ public class MainController implements Initializable {
 
             // 刷新目录树 UI
             Platform.runLater(() -> {
-                System.out.println("🔄 刷新目录树...");
+                System.out.println("刷新目录树...");
                 buildFileTree(rootDir);
                 // 如果需要保持展开状态，可以在 buildFileTree 后手动展开根节点
                 // fileTreeView.setExpanded(true);
@@ -287,6 +293,7 @@ public class MainController implements Initializable {
 
 
     private void sendMsg () {
+        initWebView();
         if (promptField.getText() == null || promptField.getText().isBlank() || promptField.getText().isEmpty()) {
             Toast.makeText(stage, "输入框不能为空!", 1000);
             return;
@@ -344,28 +351,39 @@ public class MainController implements Initializable {
         });
     }
 
+    /**
+     * 初始化 WebView 的基础 HTML 结构（只调用一次）
+     */
+    private void initWebView() {
+        if (isWebViewInitialized) return;
+
+        WebEngine engine = chatWebView.getEngine();
+        // 加载一个空的容器
+        String initialHtml = ChatRenderer.wrapHtml("");
+        engine.loadContent(initialHtml);
+
+        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                // 页面加载完成后滚动到底部
+                engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+            }
+        });
+        isWebViewInitialized = true;
+    }
+
+
     private void appendMessage(String text, boolean isUser) {
-        // 1. 生成当前消息的 HTML 片段
         String messageHtml = ChatRenderer.render(text, isUser);
 
+        // 更新内存中的历史
+        chatHistoryHtml.append(messageHtml);
+
+        // 使用 JS 将新消息追加到 body 中，而不是 reload 整个页面
         Platform.runLater(() -> {
-            // 2. 追加到历史记录
-            chatHistoryHtml.append(messageHtml);
-
-            // 3. 重新加载内容
-            // 注意：这里简单地将所有历史记录重新包装进 HTML 标签
-            String finalHtml = "<html><head>" + ChatRenderer.HEAD_CONTENT + "</head><body>" + chatHistoryHtml + "</body></html>";
-
             WebEngine engine = chatWebView.getEngine();
-            engine.loadContent(finalHtml);
-
-            // 4. 强制滚动到底部
-            // 使用 Platform.runLater 确保在页面渲染完成后执行
-            engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-                if (newState == Worker.State.SUCCEEDED) {
-                    engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-                }
-            });
+            String escapedHtml = messageHtml.replace("'", "\\'").replace("\n", "");
+            String script = "var div = document.createElement('div'); div.innerHTML = '" + escapedHtml + "'; document.body.appendChild(div.firstElementChild); window.scrollTo(0, document.body.scrollHeight);";
+            engine.executeScript(script);
         });
     }
 
@@ -376,27 +394,17 @@ public class MainController implements Initializable {
      */
     private void initAiMessage() {
         Platform.runLater(() -> {
-            // 1. 生成一个空的 AI 消息 HTML 结构
-            // 注意：这里我们渲染一个空字符串，但保留气泡结构
-            String emptyMessageHtml = ChatRenderer.render("Please wait...", false);
+            // 生成一个空的 AI 消息 HTML 结构
+            String emptyMessageHtml = ChatRenderer.render("Please wait...", false); // 渲染空字符串
 
-            // 2. 追加到历史记录
+            // 追加到历史记录
             chatHistoryHtml.append(emptyMessageHtml);
 
-            // 3. 重新加载 HTML
-            String finalHtml = ChatRenderer.wrapHtml(chatHistoryHtml.toString());
-            chatWebView.getEngine().loadContent(finalHtml);
-
-            // 4. 滚动到底部
+            // 使用 JS 追加到 DOM，而不是 reload 整个页面
             WebEngine engine = chatWebView.getEngine();
-            engine.loadContent(finalHtml);
-
-            // 使用 Platform.runLater 确保在页面渲染完成后执行
-            engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
-                if (newState == Worker.State.SUCCEEDED) {
-                    engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-                }
-            });
+            String escapedHtml = emptyMessageHtml.replace("'", "\\'").replace("\n", "");
+            String script = "var div = document.createElement('div'); div.innerHTML = '" + escapedHtml + "'; document.body.appendChild(div.firstElementChild); window.scrollTo(0, document.body.scrollHeight);";
+            engine.executeScript(script);
         });
     }
 
@@ -407,15 +415,11 @@ public class MainController implements Initializable {
     private void updateAiMessage(String currentText) {
         Platform.runLater(() -> {
             WebEngine engine = chatWebView.getEngine();
-
-            // 1. 利用 ChatRenderer 生成用于更新内部 HTML 的 JS 脚本
-            // 这个脚本会找到最后一个 .bubble.ai 并更新其 innerHTML
+            // 利用 ChatRenderer 生成用于更新内部 HTML 的 JS 脚本
             String script = ChatRenderer.generateUpdateScript(currentText);
-
-            // 2. 执行脚本
+            // 执行脚本
             engine.executeScript(script);
-
-            // 3. 保持滚动条在最底部
+            // 保持滚动条在最底部
             engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
         });
     }
@@ -456,11 +460,49 @@ public class MainController implements Initializable {
     /** 构建完整文件树（文件夹优先，递归加载） */
     private void buildFileTree(File rootDir) {
         mainSplitPane.setVisible(true);
+        // 1. 在重建前，保存当前所有展开节点的路径
+        saveExpandedState(fileTreeView.getRoot());
         TreeItem<File> rootItem = new TreeItem<>(rootDir);
-        rootItem.setExpanded(true);
+        rootItem.setExpanded(true); // 根节点默认展开
         addAllChildren(rootItem);
         fileTreeView.setRoot(rootItem);
         fileTreeView.setShowRoot(true);
+        // 2. 重建后，恢复展开状态
+        restoreExpandedState(rootItem);
+    }
+
+
+    /**
+     * 递归保存展开的路径
+     */
+    private void saveExpandedState(TreeItem<File> item) {
+        if (item == null) return;
+        if (item.isExpanded()) {
+            expandedPaths.add(item.getValue().getAbsolutePath());
+        }
+        for (TreeItem<File> child : item.getChildren()) {
+            saveExpandedState(child);
+        }
+    }
+
+    /**
+     * 递归恢复展开状态
+     */
+    private void restoreExpandedState(TreeItem<File> item) {
+        if (item == null) return;
+
+        String path = item.getValue().getAbsolutePath();
+        if (expandedPaths.contains(path)) {
+            item.setExpanded(true);
+        }
+
+        // 注意：我们需要先递归处理子节点，确保子节点也被正确设置
+        // 但 addAllChildren 是懒加载的，所以我们需要确保子节点已加载
+        // 如果子节点还没加载（比如之前没展开过），这里不需要处理
+
+        for (TreeItem<File> child : item.getChildren()) {
+            restoreExpandedState(child);
+        }
     }
 
     private void addAllChildren(TreeItem<File> parent) {
