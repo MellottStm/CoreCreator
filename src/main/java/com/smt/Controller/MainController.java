@@ -9,6 +9,7 @@ import com.smt.LangChain.LLMManager;
 import com.smt.MCP.FilesManager;
 import com.smt.Main;
 import com.smt.Thread.ThreadManager;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
@@ -65,9 +66,12 @@ public class MainController implements Initializable {
 
     private Timer saveTimer;
 
-    private Timer fileWatchTimer; // 新增：文件监听定时器
-
-    private Map<File, Long> lastModifiedMap = new HashMap<>();
+    // 存储当前所有文件和文件夹的路径快照
+    private Set<String> filePathSnapshot = new HashSet<>();
+    // 文件监控定时器
+    private Timer fileWatchTimer;
+    // 扫描锁，防止并发扫描
+    private boolean isScanning = false;
 
     private Stage stage;
 
@@ -87,8 +91,13 @@ public class MainController implements Initializable {
                     saveTimer.purge();
                     saveTimer.cancel();
                     saveTimer = null;
-                    logger.info("已关闭Main窗口!");
                 }
+                if (fileWatchTimer != null) {
+                    fileWatchTimer.purge();
+                    fileWatchTimer.cancel();
+                    fileWatchTimer = null;
+                }
+                logger.info("已关闭Main窗口!");
             }
         });
     }
@@ -173,7 +182,6 @@ public class MainController implements Initializable {
             if (loadJson.getString("save_path") != null && !loadJson.getString("save_path").isEmpty()) {
                 File selectedDir = new File(loadJson.getString("save_path"));
                 if (selectedDir.isDirectory()) {
-                    CacheManager.saveProjectPath(selectedDir.getPath());
                     buildFileTree(selectedDir);
                     llmManager = new LLMManager(selectedDir.getPath());
                     startFileWatcher(selectedDir);
@@ -184,72 +192,98 @@ public class MainController implements Initializable {
 
     }
 
-
-    private void updateLastModifiedMap(File dir) {
-        lastModifiedMap.put(dir, dir.lastModified());
-        File[] files = dir.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory()) updateLastModifiedMap(f);
-                else lastModifiedMap.put(f, f.lastModified());
-            }
-        }
-    }
-
     private void startFileWatcher(File rootDir) {
-        if (fileWatchTimer != null) fileWatchTimer.cancel();
-
-        // 初始化 Map
-        updateLastModifiedMap(rootDir);
         if (fileWatchTimer != null) {
             fileWatchTimer.purge();
             fileWatchTimer.cancel();
             fileWatchTimer = null;
         }
-        fileWatchTimer = new Timer();
+        // 1. 初始化快照：记录当前所有的文件路径
+        filePathSnapshot.clear();
+        scanFilePaths(rootDir, filePathSnapshot);
+
+        fileWatchTimer = new Timer("FileWatchTimer");
+        // 每 2 秒检查一次
         fileWatchTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (rootDir.exists() && rootDir.isDirectory()) {
-                    long currentRootTime = rootDir.lastModified();
-                    // 简单判断根目录时间或遍历检查（为了性能，这里只检查根目录时间，实际可递归检查关键目录）
-                    // 或者对比 Map 中的时间戳
-                    boolean changed = false;
-                    // 这里为了演示，每次全量刷新树（如果项目很大，建议做增量更新）
-                    // 简单优化：仅当根目录修改时间变化时刷新
-                    if (currentRootTime != lastModifiedMap.getOrDefault(rootDir, 0L)) {
-                        changed = true;
+                if (isScanning) return; // 如果上次扫描还没结束，跳过本次
+
+                try {
+                    isScanning = true;
+                    if (rootDir.exists() && rootDir.isDirectory()) {
+                        checkForChanges(rootDir);
                     }
-
-                    if (changed) {
-                        Platform.runLater(() -> {
-                            TreeItem<File> oldSelection = fileTreeView.getSelectionModel().getSelectedItem();
-                            File selectedFile = (oldSelection != null) ? oldSelection.getValue() : null;
-
-                            buildFileTree(rootDir); // 重建树
-                            lastModifiedMap.clear();
-                            updateLastModifiedMap(rootDir);
-
-                            // 尝试恢复选中状态
-                            if (selectedFile != null) {
-                                TreeItem<File> newItem = findItem(fileTreeView.getRoot(), selectedFile);
-                                if (newItem != null) fileTreeView.getSelectionModel().select(newItem);
-                            }
-                        });
-                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    isScanning = false;
                 }
             }
         }, 0, delayCheckTime);
     }
 
-    private TreeItem<File> findItem(TreeItem<File> root, File target) {
-        if (root.getValue().equals(target)) return root;
-        for (TreeItem<File> child : root.getChildren()) {
-            TreeItem<File> res = findItem(child, target);
-            if (res != null) return res;
+
+    /**
+     * 检查是否有新增或删除
+     */
+    private void checkForChanges(File rootDir) {
+        // 1. 获取当前磁盘上的最新文件列表
+        Set<String> currentPaths = new HashSet<>();
+        scanFilePaths(rootDir, currentPaths);
+
+        boolean hasChanged = false;
+
+        // 2. 检测新增：当前有，但快照里没有
+        for (String path : currentPaths) {
+            if (!filePathSnapshot.contains(path)) {
+                System.out.println("🟢 检测到新增: " + path);
+                hasChanged = true;
+            }
         }
-        return null;
+
+        // 3. 检测删除：快照里有，但当前没有了
+        for (String path : filePathSnapshot) {
+            if (!currentPaths.contains(path)) {
+                System.out.println("🔴 检测到删除: " + path);
+                hasChanged = true;
+            }
+        }
+
+        // 4. 如果有变动，更新快照并刷新 UI
+        if (hasChanged) {
+            filePathSnapshot = currentPaths; // 更新快照
+
+            // 刷新目录树 UI
+            Platform.runLater(() -> {
+                System.out.println("🔄 刷新目录树...");
+                buildFileTree(rootDir);
+                // 如果需要保持展开状态，可以在 buildFileTree 后手动展开根节点
+                // fileTreeView.setExpanded(true);
+            });
+        }
     }
+
+
+    /**
+     * 递归扫描文件路径并存入 Set
+     */
+    private void scanFilePaths(File dir, Set<String> paths) {
+        File[] files = dir.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            paths.add(file.getAbsolutePath());
+            // 如果是目录，递归进去
+            if (file.isDirectory()) {
+                scanFilePaths(file, paths);
+            }
+        }
+    }
+
+
+
+
 
 
     private void sendMsg () {
@@ -279,13 +313,25 @@ public class MainController implements Initializable {
                     logger.info("输出的路径:" + json.getString("path"));
                     logger.info("更改的类型:" + json.getString("type"));
                     if (!json.getString("path").equals("none") && !json.getString("type").equals("none")) {
-                        aiMsg.append("操作文件").append(json.getString("path")).append("\n\n```Script\n").append(json.getString("content")).append("\n\n```");
+                        FilesManager.FileOperationType opt = FilesManager.FileOperationType.getType(json.getString("type"));
+                        switch (opt) {
+                            case add:
+                                aiMsg.append("新增文件").append(json.getString("path")).append("\n\n```Script\n").append(json.getString("content")).append("\n\n```");
+                                break;
+                            case update:
+                                aiMsg.append("修改文件").append(json.getString("path")).append("\n\n```Script\n").append(json.getString("content")).append("\n\n```");
+                                break;
+                            case del:
+                                aiMsg.append("删除文件").append(json.getString("path"));
+                                break;
+                        }
                     } else {
                         aiMsg.append(json.getString("content"));
                     }
                     FilesManager.managerProject(json.getString("path"),json.getString("content"),json.getString("type"));
                 }
                 updateAiMessage(aiMsg.toString());
+                chatMessageList.add(AiMessage.from(aiMsg.toString()));
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
