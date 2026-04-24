@@ -221,7 +221,7 @@ public class MainController implements Initializable {
                         checkForChanges(rootDir);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.warn("检测文件树更新异常:" + e);
                 } finally {
                     isScanning = false;
                 }
