@@ -61,8 +61,6 @@ public class MainController implements Initializable {
 
     @FXML private Button sendButton;
 
-    private File currentRootDir;
-
     private Timer saveTimer;
 
     private Stage stage;
@@ -95,7 +93,7 @@ public class MainController implements Initializable {
         // 1. 创建 Monaco 编辑器
         WebEngine engine = chatWebView.getEngine();
         // 加载空白页面，设置基础样式
-        engine.loadContent("<html><head><style>body{background:#1e1e1e; color:#d4d4d4; font-family: sans-serif; padding: 10px;}</style></head><body>欢迎使用 AI 助手</body></html>");
+        engine.loadContent("<html><head><style>body{background:#1e1e1e; color:#d4d4d4; font-family: sans-serif; padding: 10px;}</style></head><body>Welcome!</body></html>");
         mainSplitPane.setVisible(false);
         editorContainer.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldTab, newTab) -> {
@@ -166,7 +164,17 @@ public class MainController implements Initializable {
             Configure.API_KEY = loadJson.getString("API_KEY");
             Configure.LLM_URL = loadJson.getString("LLM_URL");
             Configure.LLM_NAME = loadJson.getString("LLM_NAME");
+            if (loadJson.getString("save_path") != null && !loadJson.getString("save_path").isEmpty()) {
+                File selectedDir = new File(loadJson.getString("save_path"));
+                if (selectedDir.isDirectory()) {
+                    CacheManager.saveProjectPath(selectedDir.getPath());
+                    buildFileTree(selectedDir);
+                    llmManager = new LLMManager(selectedDir.getPath());
+                }
+            }
         }
+
+
     }
 
 
@@ -265,7 +273,7 @@ public class MainController implements Initializable {
         Stage stage = (Stage) editorContainer.getScene().getWindow();
         File selectedDir = chooser.showDialog(stage);
         if (selectedDir != null && selectedDir.isDirectory()) {
-            currentRootDir = selectedDir;
+            CacheManager.saveProjectPath(selectedDir.getPath());
             buildFileTree(selectedDir);
             llmManager = new LLMManager(selectedDir.getPath());
         }

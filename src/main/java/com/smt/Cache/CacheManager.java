@@ -50,6 +50,31 @@ public class CacheManager {
         }
     }
 
+    public static void saveProjectPath (String projectPath) {
+        try {
+            // 更新数据
+            // 确保目录存在
+            File file = new File(CACHE_FILE);
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            JSONObject saveJson = loadCache();
+            // 写入 JSON
+            if (saveJson == null) {
+                saveJson = new JSONObject();
+            }
+            saveJson.put("save_path", projectPath);
+            Path path = Paths.get(CACHE_FILE);
+            Files.createDirectories(path.getParent());
+            Files.writeString(path, saveJson.toJSONString(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            logger.warn(e);
+        }
+    }
+
+
+
     /** 从 JSON 文件加载缓存 */
     public static JSONObject loadCache() {
         JSONObject loadJson = null;
