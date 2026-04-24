@@ -6,7 +6,9 @@ import com.smt.Cache.Configure;
 import com.smt.Editor.ChatRenderer;
 import com.smt.Editor.EditorManager;
 import com.smt.LangChain.LLMManager;
+import com.smt.MCP.FilesManager;
 import com.smt.Main;
+import com.smt.Thread.ThreadManager;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.openai.OpenAiChatModel;
@@ -183,19 +185,40 @@ public class MainController implements Initializable {
             Toast.makeText(stage, "输入框不能为空!", 1000);
             return;
         }
-
         if (llmManager.createModel() == null) {
             Toast.makeText(stage, "未设置大模型参数!", 1000);
             return;
         }
-
-
         chatMessageList.add(UserMessage.from(promptField.getText()));
         appendMessage(promptField.getText(), true);
         promptField.clear();
-        simulateAiResponse("java");
-
-
+        promptField.setPromptText("Waiting Ai response...");
+        promptField.setEditable(false);
+        sendButton.setDisable(true);
+        ThreadManager.setThreadToPool(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject resJson = JSONObject.parseObject(llmManager.chat(chatMessageList));
+                StringBuffer aiMsg = new StringBuffer();
+                for (int i = 0;i < resJson.getJSONArray("result").size();i++) {
+                    JSONObject json =  resJson.getJSONArray("result").getJSONObject(i);
+                    logger.info("输出的内容:" + json.getString("content"));
+                    logger.info("输出的路径:" + json.getString("path"));
+                    logger.info("更改的类型:" + json.getString("type"));
+                    aiMsg.append("操作文件").append(json.getString("path")).append("\n\n```java\n").append(json.getString("content")).append("\n\n```");
+                    FilesManager.managerProject(json.getString("path"),json.getString("content"),json.getString("type"));
+                }
+                appendMessage(aiMsg.toString(),false);
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        promptField.setPromptText("Ask something...");
+                        promptField.setEditable(true);
+                        sendButton.setDisable(false);
+                    }
+                });
+            }
+        });
     }
 
     private void appendMessage(String text, boolean isUser) {
@@ -223,30 +246,7 @@ public class MainController implements Initializable {
         });
     }
 
-    // --- 模拟 AI 回复 (用于演示代码高亮效果) ---
-    private void simulateAiResponse(String input) {
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000); // 模拟网络延迟
 
-                String responseText;
-                if (input.contains("java")) {
-                    responseText = "没问题，这是你要的 Java 快速排序代码：\n\n```java\npublic class QuickSort {\n    public static void sort(int[] arr, int low, int high) {\n        if (low < high) {\n            int pi = partition(arr, low, high);\n            sort(arr, low, pi - 1);\n            sort(arr, pi + 1, high);\n        }\n    }\n    // ... 省略部分代码\n}\n```";
-                } else if (input.contains("python")) {
-                    responseText = "这是 Python 的实现：\n\n```python\ndef quick_sort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quick_sort(left) + middle + quick_sort(right)\n```";
-                } else if (input.contains("json")) {
-                    responseText = "这是一个 JSON 配置示例：\n\n```json\n{\n  \"name\": \"MyApp\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": {\n    \"langchain4j\": \"0.34.0\"\n  }\n}\n```";
-                } else {
-                    responseText = "我收到了你的消息：“" + input + "”。\n你可以问我关于 Java, Python, JSON 等代码的问题，我会高亮显示。";
-                }
-
-                appendMessage(responseText, false);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
 
 
     //打开设置对话框

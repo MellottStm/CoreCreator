@@ -67,16 +67,18 @@ public class LLMManager {
                 .chatModel(createModel())
                 .streamingChatModel(createStreamModel())
                 .build();
-        chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMPrompt));
-        chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
     }
 
     public String chat (List<ChatMessage> chatMessageList) {
+        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMPrompt));
+        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
         this.chatMessageList.addAll(chatMessageList);
         return assistant.chat(this.chatMessageList);
     }
 
     public TokenStream requestLLM (List<ChatMessage> chatMessageList) {
+        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMPrompt));
+        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
         this.chatMessageList.addAll(chatMessageList);
         return assistant.requestLLM(this.chatMessageList);
     }
