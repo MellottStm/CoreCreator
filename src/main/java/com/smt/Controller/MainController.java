@@ -65,6 +65,10 @@ public class MainController implements Initializable {
 
     private Timer saveTimer;
 
+    private Timer fileWatchTimer; // 新增：文件监听定时器
+
+    private Map<File, Long> lastModifiedMap = new HashMap<>();
+
     private Stage stage;
 
     private LLMManager llmManager;
@@ -172,11 +176,79 @@ public class MainController implements Initializable {
                     CacheManager.saveProjectPath(selectedDir.getPath());
                     buildFileTree(selectedDir);
                     llmManager = new LLMManager(selectedDir.getPath());
+                    startFileWatcher(selectedDir);
                 }
             }
         }
 
 
+    }
+
+
+    private void updateLastModifiedMap(File dir) {
+        lastModifiedMap.put(dir, dir.lastModified());
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory()) updateLastModifiedMap(f);
+                else lastModifiedMap.put(f, f.lastModified());
+            }
+        }
+    }
+
+    private void startFileWatcher(File rootDir) {
+        if (fileWatchTimer != null) fileWatchTimer.cancel();
+
+        // 初始化 Map
+        updateLastModifiedMap(rootDir);
+        if (fileWatchTimer != null) {
+            fileWatchTimer.purge();
+            fileWatchTimer.cancel();
+            fileWatchTimer = null;
+        }
+        fileWatchTimer = new Timer();
+        fileWatchTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (rootDir.exists() && rootDir.isDirectory()) {
+                    long currentRootTime = rootDir.lastModified();
+                    // 简单判断根目录时间或遍历检查（为了性能，这里只检查根目录时间，实际可递归检查关键目录）
+                    // 或者对比 Map 中的时间戳
+                    boolean changed = false;
+                    // 这里为了演示，每次全量刷新树（如果项目很大，建议做增量更新）
+                    // 简单优化：仅当根目录修改时间变化时刷新
+                    if (currentRootTime != lastModifiedMap.getOrDefault(rootDir, 0L)) {
+                        changed = true;
+                    }
+
+                    if (changed) {
+                        Platform.runLater(() -> {
+                            TreeItem<File> oldSelection = fileTreeView.getSelectionModel().getSelectedItem();
+                            File selectedFile = (oldSelection != null) ? oldSelection.getValue() : null;
+
+                            buildFileTree(rootDir); // 重建树
+                            lastModifiedMap.clear();
+                            updateLastModifiedMap(rootDir);
+
+                            // 尝试恢复选中状态
+                            if (selectedFile != null) {
+                                TreeItem<File> newItem = findItem(fileTreeView.getRoot(), selectedFile);
+                                if (newItem != null) fileTreeView.getSelectionModel().select(newItem);
+                            }
+                        });
+                    }
+                }
+            }
+        }, 0, delayCheckTime);
+    }
+
+    private TreeItem<File> findItem(TreeItem<File> root, File target) {
+        if (root.getValue().equals(target)) return root;
+        for (TreeItem<File> child : root.getChildren()) {
+            TreeItem<File> res = findItem(child, target);
+            if (res != null) return res;
+        }
+        return null;
     }
 
 
@@ -195,6 +267,7 @@ public class MainController implements Initializable {
         promptField.setPromptText("Waiting Ai response...");
         promptField.setEditable(false);
         sendButton.setDisable(true);
+        initAiMessage();
         ThreadManager.setThreadToPool(new Runnable() {
             @Override
             public void run() {
@@ -205,10 +278,14 @@ public class MainController implements Initializable {
                     logger.info("输出的内容:" + json.getString("content"));
                     logger.info("输出的路径:" + json.getString("path"));
                     logger.info("更改的类型:" + json.getString("type"));
-                    aiMsg.append("操作文件").append(json.getString("path")).append("\n\n```java\n").append(json.getString("content")).append("\n\n```");
+                    if (!json.getString("path").equals("none") && !json.getString("type").equals("none")) {
+                        aiMsg.append("操作文件").append(json.getString("path")).append("\n\n```Script\n").append(json.getString("content")).append("\n\n```");
+                    } else {
+                        aiMsg.append(json.getString("content"));
+                    }
                     FilesManager.managerProject(json.getString("path"),json.getString("content"),json.getString("type"));
                 }
-                appendMessage(aiMsg.toString(),false);
+                updateAiMessage(aiMsg.toString());
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
@@ -231,7 +308,7 @@ public class MainController implements Initializable {
 
             // 3. 重新加载内容
             // 注意：这里简单地将所有历史记录重新包装进 HTML 标签
-            String finalHtml = "<html><head>" + ChatRenderer.CSS_STYLE + "</head><body>" + chatHistoryHtml + "</body></html>";
+            String finalHtml = "<html><head>" + ChatRenderer.HEAD_CONTENT + "</head><body>" + chatHistoryHtml + "</body></html>";
 
             WebEngine engine = chatWebView.getEngine();
             engine.loadContent(finalHtml);
@@ -246,6 +323,56 @@ public class MainController implements Initializable {
         });
     }
 
+
+    /**
+     * 2. 初始化 AI 消息（创建空的气泡占位）
+     * 必须在 AI 开始流式输出前调用一次
+     */
+    private void initAiMessage() {
+        Platform.runLater(() -> {
+            // 1. 生成一个空的 AI 消息 HTML 结构
+            // 注意：这里我们渲染一个空字符串，但保留气泡结构
+            String emptyMessageHtml = ChatRenderer.render("Please wait...", false);
+
+            // 2. 追加到历史记录
+            chatHistoryHtml.append(emptyMessageHtml);
+
+            // 3. 重新加载 HTML
+            String finalHtml = ChatRenderer.wrapHtml(chatHistoryHtml.toString());
+            chatWebView.getEngine().loadContent(finalHtml);
+
+            // 4. 滚动到底部
+            WebEngine engine = chatWebView.getEngine();
+            engine.loadContent(finalHtml);
+
+            // 使用 Platform.runLater 确保在页面渲染完成后执行
+            engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+                if (newState == Worker.State.SUCCEEDED) {
+                    engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+                }
+            });
+        });
+    }
+
+    /**
+     * 3. 更新 AI 消息（流式核心：通过 JS 修改 DOM）
+     * @param currentText AI 当前累积的完整文本（包含 Markdown 语法）
+     */
+    private void updateAiMessage(String currentText) {
+        Platform.runLater(() -> {
+            WebEngine engine = chatWebView.getEngine();
+
+            // 1. 利用 ChatRenderer 生成用于更新内部 HTML 的 JS 脚本
+            // 这个脚本会找到最后一个 .bubble.ai 并更新其 innerHTML
+            String script = ChatRenderer.generateUpdateScript(currentText);
+
+            // 2. 执行脚本
+            engine.executeScript(script);
+
+            // 3. 保持滚动条在最底部
+            engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+        });
+    }
 
 
 
@@ -276,6 +403,7 @@ public class MainController implements Initializable {
             CacheManager.saveProjectPath(selectedDir.getPath());
             buildFileTree(selectedDir);
             llmManager = new LLMManager(selectedDir.getPath());
+            startFileWatcher(selectedDir);
         }
     }
 
