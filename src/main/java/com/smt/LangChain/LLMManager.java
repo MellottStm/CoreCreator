@@ -1,26 +1,16 @@
 package com.smt.LangChain;
 
 import com.smt.Cache.Configure;
-import dev.langchain4j.agent.tool.ReturnBehavior;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
-import dev.langchain4j.memory.chat.MessageWindowChatMemory;
-import dev.langchain4j.model.chat.StreamingChatModel;
-import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
-import dev.langchain4j.rag.content.Content;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.TokenStream;
-import dev.langchain4j.service.tool.ToolExecution;
-import dev.langchain4j.service.tool.ToolProvider;
-import dev.langchain4j.service.tool.ToolProviderResult;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class LLMManager {
 
@@ -65,23 +55,26 @@ public class LLMManager {
         LLMTools llmTools = new LLMTools();
         assistant = AiServices.builder(ToolsAssistant.class)
                 .chatModel(createModel())
+                .tools(llmTools)
                 .streamingChatModel(createStreamModel())
                 .build();
     }
 
     public String chat (List<ChatMessage> chatMessageList) {
-        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMPrompt));
+        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMCodePrompt));
         this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
         this.chatMessageList.addAll(chatMessageList);
         return assistant.chat(this.chatMessageList);
     }
 
     public TokenStream requestLLM (List<ChatMessage> chatMessageList) {
-        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMPrompt));
+        this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.LLMCodePrompt));
         this.chatMessageList.add(SystemMessage.systemMessage(ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
         this.chatMessageList.addAll(chatMessageList);
         return assistant.requestLLM(this.chatMessageList);
     }
+
+
 
 
 
