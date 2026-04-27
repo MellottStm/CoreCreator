@@ -13,7 +13,6 @@ import com.smt.Thread.ThreadManager;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
@@ -33,10 +32,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.*;
 
 public class MainController implements Initializable {
@@ -304,7 +300,7 @@ public class MainController implements Initializable {
             return;
         }
         chatMessageList.add(UserMessage.from(promptField.getText()));
-        appendMessage(promptField.getText(), true);
+        appendUserMessage(promptField.getText());
         promptField.clear();
         promptField.setPromptText("Waiting Ai response...");
         promptField.setEditable(false);
@@ -366,8 +362,8 @@ public class MainController implements Initializable {
     }
 
 
-    private void appendMessage(String text, boolean isUser) {
-        String messageHtml = ChatRenderer.render(text, isUser);
+    private void appendUserMessage(String text) {
+        String messageHtml = ChatRenderer.render(text, true);
 
         // 更新内存中的历史
         chatHistoryHtml.append(messageHtml);
