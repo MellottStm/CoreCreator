@@ -2,6 +2,7 @@ package com.smt;
 
 import com.smt.LangChain.Bean.ResultBean;
 import com.smt.LangChain.LLMManager;
+import com.smt.LangChain.ToolsPrompt;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.apache.log4j.Logger;
