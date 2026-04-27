@@ -156,7 +156,6 @@ public class ToolsPrompt {
             return null;
         }
         StringBuffer result = new StringBuffer();
-        logger.info("用户的项目根目录是:" + dir);
         result.append("用户的项目根目录是:").append(dir).append("\n");
         result.append("读取用户的项目目录所有的文件内容如下:\n");
         try {
