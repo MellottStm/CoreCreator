@@ -1,8 +1,7 @@
 package com.smt;
 
-import com.alibaba.fastjson.JSONObject;
+import com.smt.LangChain.Bean.ResultBean;
 import com.smt.LangChain.LLMManager;
-import com.smt.LangChain.ToolsPrompt;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.apache.log4j.Logger;
@@ -16,19 +15,28 @@ public class TestLLM {
     public final static Logger logger = Logger.getLogger(TAG);
 
     public static void main(String[] args) {
-//        LLMManager llmManager = new LLMManager("F:\\ATest\\ATest");
-//        List<ChatMessage> chatMessageList = new ArrayList<>();
-//        chatMessageList.add(UserMessage.from("帮我写一个查询例程，新建一个用户类（单独一个文件），用户类有一个id属性，我希望输入id，输出对应id的用户!"));
-//        JSONObject resJson = JSONObject.parseObject(llmManager.chat(chatMessageList));
-//        for (int i = 0;i < resJson.getJSONArray("result").size();i++) {
-//            JSONObject json =  resJson.getJSONArray("result").getJSONObject(i);
-//            logger.info("输出的内容:" + json.getString("content"));
-//            logger.info("输出的路径:" + json.getString("path"));
-//            logger.info("更改的类型:" + json.getString("type"));
-//        }
-        logger.info(ToolsPrompt.LLMCodePrompt);
-        logger.info(ToolsPrompt.intentClassificationPrompt);
+        LLMManager llmManager = new LLMManager("F:\\ATest\\ATest");
+        List<ChatMessage> chatMessageList = new ArrayList<>();
+        chatMessageList.add(UserMessage.from("你爸爸是谁？"));
+        llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
+            @Override
+            public void streamResult(String result) {
+                logger.info("大模型的流式内容:" + result);
+            }
 
+            @Override
+            public void finalResult(String result) {
+                logger.info("大模型最终的回答:" + result);
+            }
+        }).whenComplete((resultBeanList, throwable) -> {
+            if (resultBeanList != null) {
+                for (ResultBean resultBean :resultBeanList) {
+                    logger.info( "文件修改的内容:" + resultBean.content);
+                    logger.info("文件修改的路径:" + resultBean.path);
+                    logger.info("文件更新类型:" + resultBean.operationType);
+                }
+            }
+        });
     }
 
 }

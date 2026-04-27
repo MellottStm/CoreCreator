@@ -5,6 +5,7 @@ import com.smt.Cache.CacheManager;
 import com.smt.Cache.Configure;
 import com.smt.Editor.ChatRenderer;
 import com.smt.Editor.EditorManager;
+import com.smt.LangChain.Bean.ResultBean;
 import com.smt.LangChain.LLMManager;
 import com.smt.MCP.FilesManager;
 import com.smt.Main;
@@ -312,39 +313,32 @@ public class MainController implements Initializable {
         ThreadManager.setThreadToPool(new Runnable() {
             @Override
             public void run() {
-                JSONObject resJson = JSONObject.parseObject(llmManager.chat(chatMessageList));
-                StringBuffer aiMsg = new StringBuffer();
-                for (int i = 0;i < resJson.getJSONArray("result").size();i++) {
-                    JSONObject json =  resJson.getJSONArray("result").getJSONObject(i);
-                    logger.info("输出的内容:" + json.getString("content"));
-                    logger.info("输出的路径:" + json.getString("path"));
-                    logger.info("更改的类型:" + json.getString("type"));
-                    if (!json.getString("path").equals("none") && !json.getString("type").equals("none")) {
-                        FilesManager.FileOperationType opt = FilesManager.FileOperationType.getType(json.getString("type"));
-                        switch (opt) {
-                            case add:
-                                aiMsg.append("新增文件").append(json.getString("path")).append("\n\n```Script\n").append(json.getString("content")).append("\n\n```");
-                                break;
-                            case update:
-                                aiMsg.append("修改文件").append(json.getString("path")).append("\n\n```Script\n").append(json.getString("content")).append("\n\n```");
-                                break;
-                            case del:
-                                aiMsg.append("删除文件").append(json.getString("path"));
-                                break;
-                        }
-                    } else {
-                        aiMsg.append(json.getString("content"));
-                    }
-                    FilesManager.managerProject(json.getString("path"),json.getString("content"),json.getString("type"));
-                }
-                updateAiMessage(aiMsg.toString());
-                chatMessageList.add(AiMessage.from(aiMsg.toString()));
-                Platform.runLater(new Runnable() {
+                llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
                     @Override
-                    public void run() {
-                        promptField.setPromptText("Ask something...");
-                        promptField.setEditable(true);
-                        sendButton.setDisable(false);
+                    public void streamResult(String result) {
+                        logger.info("大模型流式返回的结果：" + result);
+                        updateAiMessage(result);
+                    }
+
+                    @Override
+                    public void finalResult(String result) {
+                        logger.info("大模型流式返回的最终结果：" + result);
+                        updateAiMessage(result);
+                        chatMessageList.add(AiMessage.from(result));
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                promptField.setPromptText("Ask something...");
+                                promptField.setEditable(true);
+                                sendButton.setDisable(false);
+                            }
+                        });
+                    }
+                }).whenComplete((resultBeanList, throwable) -> {
+                    if (resultBeanList != null) {
+                        for (ResultBean resultBean :resultBeanList) {
+                            FilesManager.managerProject(resultBean.path,resultBean.content.toString(),resultBean.operationType);
+                        }
                     }
                 });
             }

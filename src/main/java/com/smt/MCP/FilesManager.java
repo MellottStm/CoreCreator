@@ -1,5 +1,6 @@
 package com.smt.MCP;
 
+import com.smt.LangChain.Bean.ResultBean;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -8,43 +9,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static com.smt.LangChain.Bean.ResultBean.OperationType.*;
+
 public class FilesManager {
 
     private static String TAG = "FilesManager";
 
     public final static Logger logger = Logger.getLogger(TAG);
 
-    public enum FileOperationType {
-
-        add("add"),
-
-        del("del"),
-
-        update("update"),
-
-        none("none");
-
-        public String value;
-
-        FileOperationType(String value) {
-            this.value = value;
-        }
-
-        public static FileOperationType getType (String value) {
-            for (FileOperationType type:FileOperationType.values()) {
-                if (type.value.equals(value)) {
-                    return type;
-                }
-            }
-            return none;
-        }
-
-    }
 
 
-    public static void managerProject (String path,String content,String type) {
-        FileOperationType opt = FileOperationType.getType(type);
-        switch (opt) {
+    public static void managerProject (String path, String content, ResultBean.OperationType type) {
+        switch (type) {
             case add:
                 addFile(path,content);
                 break;
