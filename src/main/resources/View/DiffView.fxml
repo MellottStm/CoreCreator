@@ -4,7 +4,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import org.fxmisc.richtext.CodeArea?>
-<?import org.fxmisc.richtext.LineNumberFactory?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
@@ -17,6 +16,16 @@
     </padding>
 
     <children>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Changed Files"
+                   style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
+            <ListView fx:id="fileListView"
+                      prefHeight="120"
+                      style="-fx-background-color: #2b2b2b; -fx-border-color: #3c3c3c;"/>
+        </HBox>
+
+
         <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS">
 
             <!-- 左侧：Original -->

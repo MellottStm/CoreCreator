@@ -1,9 +1,13 @@
 package com.smt.Controller;
+import com.smt.Editor.DiffFile;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
@@ -15,9 +19,7 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class DiffController implements Initializable {
 
@@ -32,6 +34,11 @@ public class DiffController implements Initializable {
     @FXML private CodeArea leftCodeArea;
 
     @FXML private CodeArea rightCodeArea;
+
+    @FXML private ListView<String> fileListView;
+
+    private final Map<String, DiffFile> diffFiles = new LinkedHashMap<>();
+
     // 高亮样式定义
     private static final String RED_HIGHLIGHT = "deleted-line";   // 红色（删除）
 
@@ -46,18 +53,12 @@ public class DiffController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupCodeAreas();
-        setLeftText("public void setRightText(String text, int[] highlightLines) {\n" +
-                "        rightCodeArea.replaceText(text != null ? text : \"\");\n" +
-                "        if (highlightLines != null && highlightLines.length > 0) {\n" +
-                "            highlightLines(rightCodeArea, highlightLines);\n" +
-                "        }\n" +
-                "    }", new int[]{2, 5, 10},HighType.RED);   // 高亮第3、6、11行
-        setRightText("public void setRightText(String text, int[] highlightLines) {\n" +
-                "        rightCodeArea.replaceText(text != null ? text : \"\");\n" +
-                "        if (highlightLines != null && highlightLines.length > 0) {\n" +
-                "            highlightLines(rightCodeArea, highlightLines);\n" +
-                "        }\n" +
-                "    }", new int[]{3, 8},HighType.GREEN);
+        setupFileListView();
+        loadTestData();
+        // 默认选中第一个文件
+        if (!fileListView.getItems().isEmpty()) {
+            fileListView.getSelectionModel().select(0);
+        }
         applyBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -71,6 +72,59 @@ public class DiffController implements Initializable {
             }
         });
     }
+
+    /**
+     * 外部调用此方法添加一个 diff 文件
+     */
+    public void addDiffFile(String fileName, String original, String modified,
+                            int[] leftHighlights, HighType leftType,
+                            int[] rightHighlights, HighType rightType) {
+        diffFiles.put(fileName, new DiffFile(original, modified,
+                leftHighlights, leftType, rightHighlights, rightType));
+
+        fileListView.getItems().add(fileName);
+    }
+
+
+    private void loadTestData() {
+        // 示例1
+        diffFiles.put("UserService.java", new DiffFile(
+                "public class UserService {\n    public void save(User user) {\n        // old code\n    }\n}",
+                "public class UserService {\n    public void save(User user) {\n        validate(user);\n        repository.save(user);\n    }\n}",
+                new int[]{2}, HighType.RED,
+                new int[]{2, 3}, HighType.GREEN
+        ));
+
+        // 示例2
+        diffFiles.put("OrderController.java", new DiffFile(
+                "    @GetMapping(\"/orders\")\n    public List<Order> getOrders() {\n        return service.findAll();\n    }",
+                "    @GetMapping(\"/orders\")\n    public List<Order> getOrders(@RequestParam String status) {\n        return service.findByStatus(status);\n    }",
+                new int[]{2}, HighType.RED,
+                new int[]{2}, HighType.GREEN
+        ));
+
+        ObservableList<String> fileNames = FXCollections.observableArrayList(diffFiles.keySet());
+        fileListView.setItems(fileNames);
+    }
+
+    private void setupFileListView() {
+        fileListView.setStyle("-fx-background-color: #2b2b2b; -fx-text-fill: #cccccc;");
+
+        fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                showDiff(newVal);
+            }
+        });
+    }
+
+    private void showDiff(String fileName) {
+        DiffFile diff = diffFiles.get(fileName);
+        if (diff == null) return;
+
+        setLeftText(diff.originalText, diff.leftHighlightLines, diff.leftHighlightType);
+        setRightText(diff.modifiedText, diff.rightHighlightLines, diff.rightHighlightType);
+    }
+
 
     private void setupCodeAreas() {
         // 设置行号
