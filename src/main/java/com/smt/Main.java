@@ -1,6 +1,7 @@
 package com.smt;
 
 import com.smt.Cache.CacheManager;
+import com.smt.Controller.DiffController;
 import com.smt.Controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,6 +19,26 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/DiffView.fxml"));
         Parent root = loader.load();
+
+
+        DiffController diffController = loader.getController();
+        diffController.addDiffFile("Main.java","package com.smt;\n" +
+                "\n" +
+                "public class Main {\n" +
+                "    public static void main(String[] args) {\n" +
+                "\n" +
+                "    }\n" +
+                "}","package com.smt;\n" +
+                "\n" +
+                "public class Main {\n" +
+                "    public static void main(String[] args) {\n" +
+                "        System.out.println(\"fuck you\");\n" +
+                "        System.out.println(\"fuck you\");\n" +
+                "        System.out.println(\"fuck you\");\n" +
+                "        System.out.println(\"fuck you\");\n" +
+                "    }\n" +
+                "}");
+
         Scene scene = new Scene(root,1600,900);
         primaryStage.setTitle("IDEA风格代码编辑器");
         primaryStage.setScene(scene);

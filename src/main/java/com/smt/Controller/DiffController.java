@@ -54,7 +54,7 @@ public class DiffController implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupCodeAreas();
         setupFileListView();
-        loadTestData();
+//        loadTestData();
         // 默认选中第一个文件
         if (!fileListView.getItems().isEmpty()) {
             fileListView.getSelectionModel().select(0);
@@ -76,35 +76,19 @@ public class DiffController implements Initializable {
     /**
      * 外部调用此方法添加一个 diff 文件
      */
-    public void addDiffFile(String fileName, String original, String modified,
-                            int[] leftHighlights, HighType leftType,
-                            int[] rightHighlights, HighType rightType) {
+    public void addDiffFile(String fileName, String original, String modified) {
+
+
+
+
+        List<Integer> leftHighlights = new ArrayList<>();
+        HighType leftType = HighType.RED;
+        List<Integer> rightHighlights = new ArrayList<>();
+        HighType rightType = HighType.GREEN;
         diffFiles.put(fileName, new DiffFile(original, modified,
                 leftHighlights, leftType, rightHighlights, rightType));
 
         fileListView.getItems().add(fileName);
-    }
-
-
-    private void loadTestData() {
-        // 示例1
-        diffFiles.put("UserService.java", new DiffFile(
-                "public class UserService {\n    public void save(User user) {\n        // old code\n    }\n}",
-                "public class UserService {\n    public void save(User user) {\n        validate(user);\n        repository.save(user);\n    }\n}",
-                new int[]{2}, HighType.RED,
-                new int[]{2, 3}, HighType.GREEN
-        ));
-
-        // 示例2
-        diffFiles.put("OrderController.java", new DiffFile(
-                "    @GetMapping(\"/orders\")\n    public List<Order> getOrders() {\n        return service.findAll();\n    }",
-                "    @GetMapping(\"/orders\")\n    public List<Order> getOrders(@RequestParam String status) {\n        return service.findByStatus(status);\n    }",
-                new int[]{2}, HighType.RED,
-                new int[]{2}, HighType.GREEN
-        ));
-
-        ObservableList<String> fileNames = FXCollections.observableArrayList(diffFiles.keySet());
-        fileListView.setItems(fileNames);
     }
 
     private void setupFileListView() {
@@ -190,8 +174,8 @@ public class DiffController implements Initializable {
      * @param lineNumbers  要高亮的行号（从0开始）
      * @param highType
      */
-    public void highlightLines(CodeArea codeArea, int[] lineNumbers,HighType highType) {
-        if (lineNumbers == null || lineNumbers.length == 0) return;
+    public void highlightLines(CodeArea codeArea, List<Integer> lineNumbers,HighType highType) {
+        if (lineNumbers == null || lineNumbers.isEmpty()) return;
         String styleClass = "";
         switch (highType) {
             case RED:
@@ -207,7 +191,7 @@ public class DiffController implements Initializable {
         codeArea.setStyleSpans(0, styleSpans);
     }
 
-    private StyleSpans<Collection<String>> computeHighlightStyleSpans(String text, int[] lineNumbers, String styleClass) {
+    private StyleSpans<Collection<String>> computeHighlightStyleSpans(String text, List<Integer> lineNumbers, String styleClass) {
         StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
         String[] lines = text.split("\n", -1);
 
@@ -234,17 +218,17 @@ public class DiffController implements Initializable {
     }
 
     /** 左侧（Original）使用红色高亮 */
-    public void setLeftText(String text, int[] highlightLines,HighType highType) {
+    public void setLeftText(String text, List<Integer> highlightLines,HighType highType) {
         leftCodeArea.replaceText(text != null ? text : "");
-        if (highlightLines != null && highlightLines.length > 0) {
+        if (highlightLines != null && !highlightLines.isEmpty()) {
             highlightLines(leftCodeArea, highlightLines, highType); // false = 红色
         }
     }
 
     /** 右侧（Modified）使用绿色高亮 */
-    public void setRightText(String text, int[] highlightLines,HighType highType) {
+    public void setRightText(String text, List<Integer> highlightLines,HighType highType) {
         rightCodeArea.replaceText(text != null ? text : "");
-        if (highlightLines != null && highlightLines.length > 0) {
+        if (highlightLines != null && !highlightLines.isEmpty()) {
             highlightLines(rightCodeArea, highlightLines, highType); // true = 绿色
         }
     }
