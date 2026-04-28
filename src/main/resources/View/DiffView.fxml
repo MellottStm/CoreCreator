@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.fxmisc.richtext.CodeArea?>
+<?import org.fxmisc.richtext.LineNumberFactory?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.smt.Controller.DiffController"
+      style="-fx-background-color: #1e1e1e;"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <children>
+        <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS">
+
+            <!-- 左侧：Original -->
+            <VBox spacing="6" style="-fx-background-color: #2b2b2b;">
+                <Label text="左侧区域 (Original)"
+                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
+                <StackPane fx:id="leftContainer" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e;">
+                    <CodeArea fx:id="leftCodeArea"
+                              style="-fx-font-family: 'Consolas', 'Monaco', monospace; -fx-font-size: 13px;"
+                              styleClass="code-area"/>
+                </StackPane>
+            </VBox>
+
+            <!-- 右侧：Modified -->
+            <VBox spacing="6" style="-fx-background-color: #2b2b2b;">
+                <Label text="右侧区域 (Modified)"
+                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
+                <StackPane fx:id="rightContainer" VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e;">
+                    <CodeArea fx:id="rightCodeArea"
+                              style="-fx-font-family: 'Consolas', 'Monaco', monospace; -fx-font-size: 13px;"
+                              styleClass="code-area"/>
+                </StackPane>
+            </VBox>
+        </SplitPane>
+
+        <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 8;">
+            <Button fx:id="applyBtn" text="Apply"
+                    style="-fx-background-color: #007acc; -fx-text-fill: white; -fx-pref-width: 140;"/>
+            <Button fx:id="reverseBtn" text="Reverse"
+                    style="-fx-background-color: #3c3c3c; -fx-text-fill: white; -fx-pref-width: 140;"/>
+        </HBox>
+    </children>
+</VBox>
