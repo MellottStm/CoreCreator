@@ -124,3 +124,21 @@
 .tab-pane .tab:hover {
     -fx-background-color: #3c3c3c;
 }
+
+.custom-list-view {
+    -fx-background-color: #252526;
+    -fx-border-color: #3c3c3c;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-control-inner-background: #252526;
+}
+
+.custom-list-view .list-cell {
+    -fx-background-color: #252526;
+    -fx-text-fill: white;
+}
+
+.custom-list-view .list-cell:selected {
+    -fx-background-color: #0078d4;
+    -fx-text-fill: white;
+}

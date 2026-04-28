@@ -9,55 +9,98 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.smt.Controller.DiffController"
       style="-fx-background-color: #1e1e1e;"
-      spacing="10">
+      spacing="12">
 
     <padding>
-        <Insets top="10" right="10" bottom="10" left="10"/>
+        <Insets top="12" right="12" bottom="12" left="12"/>
     </padding>
 
     <children>
 
-        <HBox spacing="10" alignment="CENTER_LEFT">
+        <VBox spacing="6" style="-fx-background-color: #252526; -fx-background-radius: 6;">
+            <padding>
+                <Insets top="8" right="10" bottom="8" left="10"/>
+            </padding>
+
             <Label text="Changed Files"
-                   style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
+                   style="-fx-text-fill: #cccccc;
+                           -fx-font-size: 13px;
+                           -fx-font-weight: bold;
+                           -fx-padding: 2 4;"/>
+
             <ListView fx:id="fileListView"
-                      prefHeight="120"
-                      style="-fx-background-color: #2b2b2b; -fx-border-color: #3c3c3c;"/>
-        </HBox>
+                      prefHeight="140"
+                      styleClass="custom-list-view" stylesheets="@../CSS/theme.css"
+                   />
+        </VBox>
 
-
-        <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS">
+        <!-- 分割面板：Original | Modified -->
+        <SplitPane dividerPositions="0.5"
+                   VBox.vgrow="ALWAYS"
+                   style="-fx-background-color: #1e1e1e;
+                          -fx-border-color: #3c3c3c;
+                          -fx-border-radius: 6;">
 
             <!-- 左侧：Original -->
-            <VBox spacing="6" style="-fx-background-color: #2b2b2b;">
+            <VBox spacing="6" style="-fx-background-color: #2b2b2b; -fx-background-radius: 6;">
+                <padding>
+                    <Insets top="8" right="8" bottom="6" left="8"/>
+                </padding>
                 <Label text="Original"
-                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
-                <StackPane fx:id="leftContainer" VBox.vgrow="ALWAYS"
-                           style="-fx-background-color: #1e1e1e;">
+                       style="-fx-text-fill: #cccccc;
+                               -fx-font-size: 13px;
+                               -fx-font-weight: bold;
+                               -fx-padding: 4 8;"/>
+                <StackPane fx:id="leftContainer"
+                           VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e;
+                                  -fx-background-radius: 4;">
                     <CodeArea fx:id="leftCodeArea"
-                              style="-fx-font-family: 'Consolas', 'Monaco', monospace; -fx-font-size: 13px;"
+                              style="-fx-font-family: 'Consolas', 'Monaco', monospace;
+                                     -fx-font-size: 13px;"
                               styleClass="code-area"/>
                 </StackPane>
             </VBox>
 
             <!-- 右侧：Modified -->
-            <VBox spacing="6" style="-fx-background-color: #2b2b2b;">
+            <VBox spacing="6" style="-fx-background-color: #2b2b2b; -fx-background-radius: 6;">
+                <padding>
+                    <Insets top="8" right="8" bottom="6" left="8"/>
+                </padding>
                 <Label text="Modified"
-                       style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
-                <StackPane fx:id="rightContainer" VBox.vgrow="ALWAYS"
-                           style="-fx-background-color: #1e1e1e;">
+                       style="-fx-text-fill: #cccccc;
+                               -fx-font-size: 13px;
+                               -fx-font-weight: bold;
+                               -fx-padding: 4 8;"/>
+                <StackPane fx:id="rightContainer"
+                           VBox.vgrow="ALWAYS"
+                           style="-fx-background-color: #1e1e1e;
+                                  -fx-background-radius: 4;">
                     <CodeArea fx:id="rightCodeArea"
-                              style="-fx-font-family: 'Consolas', 'Monaco', monospace; -fx-font-size: 13px;"
+                              style="-fx-font-family: 'Consolas', 'Monaco', monospace;
+                                     -fx-font-size: 13px;"
                               styleClass="code-area"/>
                 </StackPane>
             </VBox>
         </SplitPane>
 
-        <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 8;">
-            <Button fx:id="applyBtn" text="Apply"
-                    style="-fx-background-color: #007acc; -fx-text-fill: white; -fx-pref-width: 140;"/>
-            <Button fx:id="reverseBtn" text="Reverse"
-                    style="-fx-background-color: #3c3c3c; -fx-text-fill: white; -fx-pref-width: 140;"/>
+        <!-- 底部按钮区域 -->
+        <HBox spacing="15"
+              alignment="CENTER_RIGHT"
+              style="-fx-padding: 8 0 0 0;">
+            <Button fx:id="applyBtn"
+                    text="Apply"
+                    style="-fx-background-color: #007acc;
+                           -fx-text-fill: white;
+                           -fx-pref-width: 140;
+                           -fx-font-size: 13px;"/>
+            <Button fx:id="reverseBtn"
+                    text="Reverse"
+                    style="-fx-background-color: #3c3c3c;
+                           -fx-text-fill: white;
+                           -fx-pref-width: 140;
+                           -fx-font-size: 13px;"/>
         </HBox>
+
     </children>
 </VBox>
