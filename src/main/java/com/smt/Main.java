@@ -6,7 +6,10 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 public class Main extends Application {
 
@@ -17,6 +20,12 @@ public class Main extends Application {
         MainController mainController = loader.getController();
         mainController.setStage(stage);
         Scene scene = new Scene(root, 1600, 900);
+        try {
+            Image icon = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/Img/logo.png")));
+            stage.getIcons().add(icon);
+        } catch (Exception e) {
+            System.out.println("loading fail");
+        }
         stage.setTitle("CoreCreator");
         stage.setScene(scene);
         stage.show();
