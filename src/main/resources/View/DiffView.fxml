@@ -21,7 +21,7 @@
 
             <!-- 左侧：Original -->
             <VBox spacing="6" style="-fx-background-color: #2b2b2b;">
-                <Label text="左侧区域 (Original)"
+                <Label text="Original"
                        style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
                 <StackPane fx:id="leftContainer" VBox.vgrow="ALWAYS"
                            style="-fx-background-color: #1e1e1e;">
@@ -33,7 +33,7 @@
 
             <!-- 右侧：Modified -->
             <VBox spacing="6" style="-fx-background-color: #2b2b2b;">
-                <Label text="右侧区域 (Modified)"
+                <Label text="Modified"
                        style="-fx-text-fill: #cccccc; -fx-font-size: 13px; -fx-padding: 4 8;"/>
                 <StackPane fx:id="rightContainer" VBox.vgrow="ALWAYS"
                            style="-fx-background-color: #1e1e1e;">

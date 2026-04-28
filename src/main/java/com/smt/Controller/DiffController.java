@@ -37,6 +37,11 @@ public class DiffController implements Initializable {
 
     private static final String GREEN_HIGHLIGHT = "added-line";   // 绿色（新增）
 
+    public enum HighType {
+        RED,
+        GREEN
+    }
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -46,13 +51,25 @@ public class DiffController implements Initializable {
                 "        if (highlightLines != null && highlightLines.length > 0) {\n" +
                 "            highlightLines(rightCodeArea, highlightLines);\n" +
                 "        }\n" +
-                "    }", new int[]{2, 5, 10});   // 高亮第3、6、11行
+                "    }", new int[]{2, 5, 10},HighType.RED);   // 高亮第3、6、11行
         setRightText("public void setRightText(String text, int[] highlightLines) {\n" +
                 "        rightCodeArea.replaceText(text != null ? text : \"\");\n" +
                 "        if (highlightLines != null && highlightLines.length > 0) {\n" +
                 "            highlightLines(rightCodeArea, highlightLines);\n" +
                 "        }\n" +
-                "    }", new int[]{3, 8});
+                "    }", new int[]{3, 8},HighType.GREEN);
+        applyBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+
+            }
+        });
+        reverseBtn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+
+            }
+        });
     }
 
     private void setupCodeAreas() {
@@ -64,21 +81,48 @@ public class DiffController implements Initializable {
         String editorStyle = """
             -fx-font-family: 'Consolas', 'Courier New', 'Monaco', monospace;
             -fx-font-size: 13px;
-            -fx-background-color: #1e1e1e;
-            -fx-text-fill: white;
-            -fx-padding: 5;
             """;
 
+        // 应用基本样式
         leftCodeArea.setStyle(editorStyle);
         rightCodeArea.setStyle(editorStyle);
 
-        // 内联注入高亮样式（红色和绿色）
+        // 内联注入高亮样式（红色和绿色）及文本颜色样式
         String highlightStyles = """
+            .code-area {
+                -fx-background-color: #1e1e1e;
+            }
+            
+            .text, .paragraph-text {
+                -fx-fill: white;
+            }
+            
+            .paragraph-box {
+                -fx-background-color: #1e1e1e;
+            }
+           
+            .lineno {
+                -fx-background-color: #1e1e1e;
+                -fx-text-fill: gray;
+                -fx-font-family: 'Consolas', 'Courier New', 'Monaco', monospace;
+                -fx-font-size: 13px;
+                -fx-alignment: center-right;
+                -fx-padding: 0 5 0 5;
+                -fx-pref-width: 50;
+            }
+            
             .deleted-line {
                 -rtfx-background-color: rgba(255, 85, 85, 0.35);
+                -fx-fill: white !important;
             }
+            
             .added-line {
                 -rtfx-background-color: rgba(80, 200, 120, 0.35);
+                -fx-fill: white !important;
+            }
+            
+            .lineno {
+                -fx-text-fill: #888888;
             }
             """;
 
@@ -90,12 +134,19 @@ public class DiffController implements Initializable {
      * 高亮指定行
      * @param codeArea     要高亮的 CodeArea
      * @param lineNumbers  要高亮的行号（从0开始）
-     * @param isAdded      true=绿色（新增），false=红色（删除）
+     * @param highType
      */
-    public void highlightLines(CodeArea codeArea, int[] lineNumbers, boolean isAdded) {
+    public void highlightLines(CodeArea codeArea, int[] lineNumbers,HighType highType) {
         if (lineNumbers == null || lineNumbers.length == 0) return;
-
-        String styleClass = isAdded ? GREEN_HIGHLIGHT : RED_HIGHLIGHT;
+        String styleClass = "";
+        switch (highType) {
+            case RED:
+                styleClass = RED_HIGHLIGHT;
+                break;
+            case GREEN:
+                styleClass = GREEN_HIGHLIGHT;
+                break;
+        }
         StyleSpans<Collection<String>> styleSpans = computeHighlightStyleSpans(
                 codeArea.getText(), lineNumbers, styleClass);
 
@@ -129,18 +180,18 @@ public class DiffController implements Initializable {
     }
 
     /** 左侧（Original）使用红色高亮 */
-    public void setLeftText(String text, int[] highlightLines) {
+    public void setLeftText(String text, int[] highlightLines,HighType highType) {
         leftCodeArea.replaceText(text != null ? text : "");
         if (highlightLines != null && highlightLines.length > 0) {
-            highlightLines(leftCodeArea, highlightLines, false); // false = 红色
+            highlightLines(leftCodeArea, highlightLines, highType); // false = 红色
         }
     }
 
     /** 右侧（Modified）使用绿色高亮 */
-    public void setRightText(String text, int[] highlightLines) {
+    public void setRightText(String text, int[] highlightLines,HighType highType) {
         rightCodeArea.replaceText(text != null ? text : "");
         if (highlightLines != null && highlightLines.length > 0) {
-            highlightLines(rightCodeArea, highlightLines, true); // true = 绿色
+            highlightLines(rightCodeArea, highlightLines, highType); // true = 绿色
         }
     }
 }
