@@ -64,7 +64,7 @@ public class CacheManager {
             if (saveJson == null) {
                 saveJson = new JSONObject();
             }
-            saveJson.put("save_path", projectPath);
+            saveJson.put("project_path", projectPath);
             Path path = Paths.get(CACHE_FILE);
             Files.createDirectories(path.getParent());
             Files.writeString(path, saveJson.toJSONString(), StandardCharsets.UTF_8);
