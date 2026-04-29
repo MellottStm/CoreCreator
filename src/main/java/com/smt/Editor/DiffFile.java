@@ -10,19 +10,19 @@ public class DiffFile {
 
     public  String modifiedText;
 
-    public List<Integer> leftHighlightLines;
+    public List<DiffController.HighType> leftHighlightTypes;
 
-    public List<Integer> rightHighlightLines;
+    public List<DiffController.HighType> rightHighlightTypes;
 
     public DiffController.HighType leftHighlightType;
 
     public  DiffController.HighType rightHighlightType;
 
-    public DiffFile(String original, String modified, List<Integer> leftLines, DiffController.HighType leftType,List<Integer> rightLines, DiffController.HighType rightType) {
+    public DiffFile(String original, String modified, List<DiffController.HighType> leftLines, DiffController.HighType leftType, List<DiffController.HighType> rightLines, DiffController.HighType rightType) {
         this.originalText = original;
         this.modifiedText = modified;
-        this.leftHighlightLines = leftLines;
-        this.rightHighlightLines = rightLines;
+        this.leftHighlightTypes = leftLines;
+        this.rightHighlightTypes = rightLines;
         this.leftHighlightType = leftType;
         this.rightHighlightType = rightType;
     }

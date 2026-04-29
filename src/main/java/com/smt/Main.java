@@ -22,25 +22,27 @@ public class Main extends Application {
 
 
         DiffController diffController = loader.getController();
-        diffController.addDiffFile("Main.java","package com.smt;\n" +
+        diffController.addDiffFile("Main.java",
+                "package com.smt;\n" +
                 "\n" +
                 "public class Main {\n" +
                 "    public static void main(String[] args) {\n" +
                 "\n" +
                 "    }\n" +
-                "}","package com.smt;\n" +
+                "}",
+                "package com.smt;\n" +
                 "\n" +
                 "public class Main {\n" +
                 "    public static void main(String[] args) {\n" +
                 "        System.out.println(\"fuck you\");\n" +
-                "        System.out.println(\"fuck you\");\n" +
-                "        System.out.println(\"fuck you\");\n" +
-                "        System.out.println(\"fuck you\");\n" +
+                        "\n" +
+                        "\n" +
+                        "\n" +
                 "    }\n" +
                 "}");
 
         Scene scene = new Scene(root,1600,900);
-        primaryStage.setTitle("IDEA风格代码编辑器");
+        primaryStage.setTitle("CoreCreator");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

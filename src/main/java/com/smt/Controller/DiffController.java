@@ -1,23 +1,18 @@
 package com.smt.Controller;
+import com.smt.Editor.Diff;
 import com.smt.Editor.DiffFile;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import com.smt.Editor.DiffManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import org.apache.log4j.Logger;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
-
 import java.net.URL;
 import java.util.*;
 
@@ -78,17 +73,18 @@ public class DiffController implements Initializable {
      */
     public void addDiffFile(String fileName, String original, String modified) {
 
+        List<String> originalList = Arrays.asList(original.split("\\r?\\n", -1));
+        List<String> modifiedList = Arrays.asList(modified.split("\\r?\\n", -1));
 
 
+        List<Diff> diffResult = DiffManager.compareTexts(originalList, modifiedList);
 
-        List<Integer> leftHighlights = new ArrayList<>();
-        HighType leftType = HighType.RED;
-        List<Integer> rightHighlights = new ArrayList<>();
-        HighType rightType = HighType.GREEN;
-        diffFiles.put(fileName, new DiffFile(original, modified,
-                leftHighlights, leftType, rightHighlights, rightType));
+        // 添加到列表并默认选中
+        if (!fileListView.getItems().contains(fileName)) {
+            fileListView.getItems().add(fileName);
+        }
+        fileListView.getSelectionModel().select(fileName); // 选中当前添加的文件
 
-        fileListView.getItems().add(fileName);
     }
 
     private void setupFileListView() {
@@ -105,8 +101,9 @@ public class DiffController implements Initializable {
         DiffFile diff = diffFiles.get(fileName);
         if (diff == null) return;
 
-        setLeftText(diff.originalText, diff.leftHighlightLines, diff.leftHighlightType);
-        setRightText(diff.modifiedText, diff.rightHighlightLines, diff.rightHighlightType);
+        // 注意：这里传入的是颜色类型列表，而不是行号
+        setLeftText(diff.originalText, diff.leftHighlightTypes);
+        setRightText(diff.modifiedText, diff.rightHighlightTypes);
     }
 
 
@@ -171,65 +168,53 @@ public class DiffController implements Initializable {
     /**
      * 高亮指定行
      * @param codeArea     要高亮的 CodeArea
-     * @param lineNumbers  要高亮的行号（从0开始）
-     * @param highType
      */
-    public void highlightLines(CodeArea codeArea, List<Integer> lineNumbers,HighType highType) {
-        if (lineNumbers == null || lineNumbers.isEmpty()) return;
-        String styleClass = "";
-        switch (highType) {
-            case RED:
-                styleClass = RED_HIGHLIGHT;
-                break;
-            case GREEN:
-                styleClass = GREEN_HIGHLIGHT;
-                break;
-        }
-        StyleSpans<Collection<String>> styleSpans = computeHighlightStyleSpans(
-                codeArea.getText(), lineNumbers, styleClass);
+    public void highlightLines(CodeArea codeArea,  List<HighType> lineTypes) {
+        if (lineTypes == null || lineTypes.isEmpty()) return;
 
+        StyleSpans<Collection<String>> styleSpans = computeHighlightStyleSpans(
+                codeArea.getText(), lineTypes
+        );
         codeArea.setStyleSpans(0, styleSpans);
     }
 
-    private StyleSpans<Collection<String>> computeHighlightStyleSpans(String text, List<Integer> lineNumbers, String styleClass) {
+    private StyleSpans<Collection<String>> computeHighlightStyleSpans(String text, List<HighType> lineTypes) {
         StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
         String[] lines = text.split("\n", -1);
 
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
-            int length = line.length() + 1;  // +1 表示换行符
+            // 注意：这里 length 至少为 1，防止空行塌陷
+            int length = Math.max(1, line.length() + 1);
 
-            boolean shouldHighlight = false;
-            for (int targetLine : lineNumbers) {
-                if (targetLine == i) {
-                    shouldHighlight = true;
-                    break;
-                }
-            }
+            // 获取这一行应该是什么颜色
+            HighType type = (i < lineTypes.size()) ? lineTypes.get(i) : null;
 
-            if (shouldHighlight) {
-                spansBuilder.add(Collections.singleton(styleClass), length);
+            if (type == HighType.RED) {
+                spansBuilder.add(Collections.singleton(RED_HIGHLIGHT), length);
+            } else if (type == HighType.GREEN) {
+                spansBuilder.add(Collections.singleton(GREEN_HIGHLIGHT), length);
             } else {
+                // 默认情况（包括 EQUAL 和空行）
                 spansBuilder.add(Collections.emptyList(), length);
             }
         }
-
         return spansBuilder.create();
     }
 
     /** 左侧（Original）使用红色高亮 */
-    public void setLeftText(String text, List<Integer> highlightLines,HighType highType) {
+    public void setLeftText(String text, List<HighType> highlightTypes) {
         leftCodeArea.replaceText(text != null ? text : "");
-        if (highlightLines != null && !highlightLines.isEmpty()) {
-            highlightLines(leftCodeArea, highlightLines, highType); // false = 红色
+        if (highlightTypes != null && !highlightTypes.isEmpty()) {
+            highlightLines(leftCodeArea, highlightTypes);
         }
     }
 
     /** 右侧（Modified）使用绿色高亮 */
-    public void setRightText(String text, List<Integer> highlightLines,HighType highType) {
+    public void setRightText(String text, List<HighType> highlightTypes) {
         rightCodeArea.replaceText(text != null ? text : "");
-        if (highlightLines != null && !highlightLines.isEmpty()) {
-            highlightLines(rightCodeArea, highlightLines, highType); // true = 绿色
+        if (highlightTypes != null && !highlightTypes.isEmpty()) {
+            highlightLines(rightCodeArea, highlightTypes);
         }
     }
 }
