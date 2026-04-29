@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
@@ -24,6 +25,10 @@ public class DiffController implements Initializable {
 
     public final static Logger logger = Logger.getLogger(TAG);
 
+    @FXML private HBox titleBar;
+
+    @FXML private Button closeButton;
+
     @FXML private Button applyBtn;
 
     @FXML private Button reverseBtn;
@@ -33,6 +38,10 @@ public class DiffController implements Initializable {
     @FXML private CodeArea rightCodeArea;
 
     @FXML private ListView<String> fileListView;
+
+    private double xOffset = 0;
+
+    private double yOffset = 0;
 
     private final Map<String, DiffFile> diffFiles = new LinkedHashMap<>();
 
@@ -74,6 +83,7 @@ public class DiffController implements Initializable {
                 }
             }
         });
+        setupTitleBar();
     }
 
 
@@ -83,6 +93,28 @@ public class DiffController implements Initializable {
 
     public void setEvent (Event event) {
         this.event = event;
+    }
+
+    private void setupTitleBar() {
+        // 鼠标拖动窗口
+        titleBar.setOnMousePressed(event -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+
+        titleBar.setOnMouseDragged(event -> {
+            if (stage != null) {
+                stage.setX(event.getScreenX() - xOffset);
+                stage.setY(event.getScreenY() - yOffset);
+            }
+        });
+
+        // 关闭按钮
+        closeButton.setOnAction(event -> {
+            if (stage != null) {
+                stage.close();
+            }
+        });
     }
 
 
