@@ -203,53 +203,106 @@ public class MainController implements Initializable {
     }
 
     public void handleCreateFile(File dir) {
-        inputDialog("create file", name -> {
+        inputDialog("Create file", name -> {
             try {
                 FileManager.createFile(dir, name);
             } catch (Exception e) {
                 logger.warn("新建文件失败:" + e);
             }
+        }, new InputController.InputDialogEvent() {
+            @Override
+            public void showEvent(InputController controller) {
+
+            }
         });
     }
 
     public void handleCreateFolder(File dir) {
-        inputDialog("create fold", name -> {
+        inputDialog("Create fold", name -> {
             FileManager.createDirectory(dir, name);
+        }, new InputController.InputDialogEvent() {
+            @Override
+            public void showEvent(InputController controller) {
+
+            }
         });
     }
 
     public void handleRename(File file) {
-        inputDialog("rename", name -> {
+        inputDialog("Rename", name -> {
             FileManager.rename(file, name);
+        }, new InputController.InputDialogEvent() {
+            @Override
+            public void showEvent(InputController controller) {
+                controller.setText(file.getName());
+            }
         });
     }
 
     public void handleDelete(File file) {
-        confirm("del", () -> {
+        confirm("Delete file \"" +  file.getName() +"\"?",  () -> {
             FileManager.delete(file);
         });
     }
 
 
-    private void inputDialog(String title, Consumer<String> callback) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle(title);
-        dialog.setContentText("请输入名称:");
+    private void inputDialog(String title, Consumer<String> callback, InputController.InputDialogEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/InputView.fxml"));
+            Parent root = loader.load();
 
-        dialog.showAndWait().ifPresent(name -> {
+            InputController controller = loader.getController();
+            event.showEvent(controller);
+            Stage dialogStage = new Stage();
+            controller.setTitle(title);
+            controller.init(dialogStage);
             try {
-                callback.accept(name);
+                Image icon = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/Img/logo.png")));
+                dialogStage.getIcons().add(icon);
             } catch (Exception e) {
-                Toast.makeText(stage, e.getMessage(), 1000);
+                System.out.println("loading fail");
             }
-        });
+            dialogStage.initStyle(StageStyle.UNDECORATED);
+            dialogStage.setScene(new Scene(root));
+            dialogStage.showAndWait();
+
+            String result = controller.getResult();
+            if (result != null) {
+                callback.accept(result);
+            }
+
+        } catch (Exception e) {
+            logger.warn(e);
+        }
     }
 
     private void confirm(String text, Runnable ok) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, text);
-        alert.showAndWait().ifPresent(btn -> {
-            if (btn == ButtonType.OK) ok.run();
-        });
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/ConfirmView.fxml"));
+            Parent root = loader.load();
+
+            ConfirmController controller = loader.getController();
+
+            Stage dialogStage = new Stage();
+            controller.setContent(text);
+            controller.init(dialogStage);
+            try {
+                Image icon = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/Img/logo.png")));
+                dialogStage.getIcons().add(icon);
+            } catch (Exception e) {
+                System.out.println("loading fail");
+            }
+            dialogStage.initStyle(StageStyle.UNDECORATED);
+            dialogStage.setScene(new Scene(root));
+            dialogStage.showAndWait();
+
+            if (controller.isConfirmed()) {
+                ok.run();
+            }
+
+        } catch (Exception e) {
+            logger.warn(e);
+        }
     }
 
     private void initData () {
