@@ -1,7 +1,5 @@
 package com.smt;
 
-import com.smt.Cache.CacheManager;
-import com.smt.Controller.DiffController;
 import com.smt.Controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -9,6 +7,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.util.Objects;
 
@@ -26,6 +25,7 @@ public class Main extends Application {
         } catch (Exception e) {
             System.out.println("loading fail");
         }
+        stage.initStyle(StageStyle.UNDECORATED);
         stage.setTitle("CoreCreator");
         stage.setScene(scene);
         stage.show();

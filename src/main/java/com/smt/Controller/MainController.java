@@ -29,6 +29,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import java.io.File;
@@ -355,6 +356,7 @@ public class MainController implements Initializable {
             Stage diffStage = new Stage();
             diffController.setStage(diffStage);
             Scene scene = new Scene(root, 1600, 900);
+            diffStage.initStyle(StageStyle.UNDECORATED);
             diffStage.setTitle("CoreCreator");
             diffStage.setScene(scene);
             diffStage.show();
@@ -478,6 +480,7 @@ public class MainController implements Initializable {
             Stage settingsStage = new Stage();
             settingsController.setStage(settingsStage);
             Scene scene = new Scene(root, 480, 280);
+            settingsStage.initStyle(StageStyle.UNDECORATED);
             settingsStage.setTitle("Settings");
             settingsStage.setScene(scene);
             settingsStage.show();
