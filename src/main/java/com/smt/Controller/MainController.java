@@ -24,6 +24,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
@@ -104,6 +105,7 @@ public class MainController implements Initializable {
 
     public void setStage (Stage stage) {
         this.stage= stage;
+        EditorManager.makeResizable(stage,5,800,600);
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
@@ -426,11 +428,17 @@ public class MainController implements Initializable {
             Parent root = loader.load();
             DiffController diffController = loader.getController();
             Stage diffStage = new Stage();
-            diffController.setStage(diffStage);
             Scene scene = new Scene(root, 1600, 900);
+            diffStage.setScene(scene);
+            try {
+                Image icon = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/Img/logo.png")));
+                diffStage.getIcons().add(icon);
+            } catch (Exception e) {
+                System.out.println("loading fail");
+            }
+            diffController.setStage(diffStage);
             diffStage.initStyle(StageStyle.UNDECORATED);
             diffStage.setTitle("CoreCreator");
-            diffStage.setScene(scene);
             diffStage.show();
             boolean shouldShow = true;
             File file;
@@ -558,11 +566,17 @@ public class MainController implements Initializable {
             Parent root = loader.load();
             SettingsController settingsController = loader.getController();
             Stage settingsStage = new Stage();
-            settingsController.setStage(settingsStage);
             Scene scene = new Scene(root, 480, 280);
+            try {
+                Image icon = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/Img/logo.png")));
+                settingsStage.getIcons().add(icon);
+            } catch (Exception e) {
+                System.out.println("loading fail");
+            }
+            settingsStage.setScene(scene);
+            settingsController.setStage(settingsStage);
             settingsStage.initStyle(StageStyle.UNDECORATED);
             settingsStage.setTitle("Settings");
-            settingsStage.setScene(scene);
             settingsStage.show();
         }catch (Exception e) {
             logger.warn("打开Setting异常:" + e);

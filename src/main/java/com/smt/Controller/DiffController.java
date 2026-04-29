@@ -2,6 +2,7 @@ package com.smt.Controller;
 import com.smt.Editor.Diff;
 import com.smt.Editor.DiffFile;
 import com.smt.Editor.DiffManager;
+import com.smt.Editor.EditorManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -94,6 +95,7 @@ public class DiffController implements Initializable {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        EditorManager.makeResizable(stage,5,800,600);
     }
 
     public void setEvent (Event event) {

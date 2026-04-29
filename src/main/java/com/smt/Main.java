@@ -16,9 +16,8 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/MainView.fxml"));
         Parent root = loader.load();
-        MainController mainController = loader.getController();
-        mainController.setStage(stage);
         Scene scene = new Scene(root, 1600, 900);
+        MainController mainController = loader.getController();
         try {
             Image icon = new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/Img/logo.png")));
             stage.getIcons().add(icon);
@@ -29,6 +28,7 @@ public class Main extends Application {
         stage.setTitle("CoreCreator");
         stage.setScene(scene);
         stage.show();
+        mainController.setStage(stage);
     }
     public static void main(String[] args) {
         launch(args);

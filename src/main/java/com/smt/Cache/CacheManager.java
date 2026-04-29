@@ -85,8 +85,10 @@ public class CacheManager {
                 return null;
             }
             String content = Files.readString(Paths.get(CACHE_FILE));
-            loadJson = JSONObject.parseObject(content);
-            logger.info("加载获取的缓存内容:" + loadJson.toJSONString());
+            if (!content.isEmpty()) {
+                loadJson = JSONObject.parseObject(content);
+                logger.info("加载获取的缓存内容:" + loadJson.toJSONString());
+            }
         } catch (Exception ex) {
             logger.warn(ex);
         }

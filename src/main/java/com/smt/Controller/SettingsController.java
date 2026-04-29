@@ -2,6 +2,7 @@ package com.smt.Controller;
 
 import com.smt.Cache.CacheManager;
 import com.smt.Cache.Configure;
+import com.smt.Editor.EditorManager;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -92,6 +93,7 @@ public class SettingsController implements Initializable {
 
     public void setStage(Stage stage) {
         this.stage = stage;
+        EditorManager.makeResizable(stage,5,480,280);
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {

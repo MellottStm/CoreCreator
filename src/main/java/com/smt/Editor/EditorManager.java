@@ -2,7 +2,10 @@ package com.smt.Editor;
 
 import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
+import javafx.scene.Cursor;
+import javafx.scene.Scene;
 import javafx.scene.control.Tab;
+import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -11,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class EditorManager {
 
@@ -73,6 +77,83 @@ public class EditorManager {
         return monacoFX;
     }
 
+    public static void makeResizable(Stage stage, int margin, double minWidth, double minHeight) {
+
+        Scene scene = stage.getScene();
+
+        final Delta delta = new Delta();
+
+        scene.setOnMouseMoved(event -> {
+            double x = event.getSceneX();
+            double y = event.getSceneY();
+            double width = scene.getWidth();
+            double height = scene.getHeight();
+
+            Cursor cursor = Cursor.DEFAULT;
+
+            if (x < margin && y < margin) cursor = Cursor.NW_RESIZE;
+            else if (x > width - margin && y < margin) cursor = Cursor.NE_RESIZE;
+            else if (x < margin && y > height - margin) cursor = Cursor.SW_RESIZE;
+            else if (x > width - margin && y > height - margin) cursor = Cursor.SE_RESIZE;
+            else if (x < margin) cursor = Cursor.W_RESIZE;
+            else if (x > width - margin) cursor = Cursor.E_RESIZE;
+            else if (y < margin) cursor = Cursor.N_RESIZE;
+            else if (y > height - margin) cursor = Cursor.S_RESIZE;
+
+            scene.setCursor(cursor);
+        });
+
+        scene.setOnMousePressed(event -> {
+            delta.startX = stage.getWidth();
+            delta.startY = stage.getHeight();
+            delta.startScreenX = event.getScreenX();
+            delta.startScreenY = event.getScreenY();
+            delta.startStageX = stage.getX();
+            delta.startStageY = stage.getY();
+            delta.cursor = scene.getCursor();
+        });
+
+        scene.setOnMouseDragged(event -> {
+            Cursor cursor = delta.cursor;
+            if (cursor == Cursor.DEFAULT) return;
+
+            double dx = event.getScreenX() - delta.startScreenX;
+            double dy = event.getScreenY() - delta.startScreenY;
+
+            if (cursor == Cursor.E_RESIZE || cursor == Cursor.NE_RESIZE || cursor == Cursor.SE_RESIZE) {
+                double newWidth = delta.startX + dx;
+                if (newWidth >= minWidth) stage.setWidth(newWidth);
+            }
+
+            if (cursor == Cursor.S_RESIZE || cursor == Cursor.SE_RESIZE || cursor == Cursor.SW_RESIZE) {
+                double newHeight = delta.startY + dy;
+                if (newHeight >= minHeight) stage.setHeight(newHeight);
+            }
+
+            if (cursor == Cursor.W_RESIZE || cursor == Cursor.NW_RESIZE || cursor == Cursor.SW_RESIZE) {
+                double newWidth = delta.startX - dx;
+                if (newWidth >= minWidth) {
+                    stage.setX(delta.startStageX + dx);
+                    stage.setWidth(newWidth);
+                }
+            }
+
+            if (cursor == Cursor.N_RESIZE || cursor == Cursor.NE_RESIZE || cursor == Cursor.NW_RESIZE) {
+                double newHeight = delta.startY - dy;
+                if (newHeight >= minHeight) {
+                    stage.setY(delta.startStageY + dy);
+                    stage.setHeight(newHeight);
+                }
+            }
+        });
+    }
+
+    private static class Delta {
+        double startX, startY;
+        double startScreenX, startScreenY;
+        double startStageX, startStageY;
+        Cursor cursor;
+    }
     public static void checkEditorIsChange () {
         tabToEditor.forEach((tab,editor)->{
             File file = tabToFile.get(tab);
