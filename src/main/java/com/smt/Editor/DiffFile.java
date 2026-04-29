@@ -14,10 +14,6 @@ public class DiffFile {
 
     public List<DiffController.HighType> rightHighlightTypes;
 
-    public DiffController.HighType leftHighlightType;
-
-    public  DiffController.HighType rightHighlightType;
-
     public DiffFile(String original, String modified, List<DiffController.HighType> leftLines, List<DiffController.HighType> rightLines) {
         this.originalText = original;
         this.modifiedText = modified;
