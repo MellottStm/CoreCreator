@@ -5,27 +5,56 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TreeView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.web.WebView?>
+
 <BorderPane prefHeight="553.0" prefWidth="833.0" style="-fx-background-color: #1e1e1e;" stylesheets="@../CSS/theme.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.smt.Controller.MainController">
 
         <!-- 顶部菜单栏（深色） -->
-<top>
-    <MenuBar >
-        <Menu text="File">
-            <MenuItem fx:id="openFolderMenuItem" text="open..." />
-            <MenuItem fx:id="openSettingMenuItem" text="settings.." />
-        </Menu>
-    </MenuBar>
-</top>
+    <top>
+        <VBox>
+            <!-- 自定义标题栏 -->
+            <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="6" style="-fx-background-color: #252526;                          -fx-padding: 8 12 8 12;                          -fx-border-color: #3c3c3c;                          -fx-border-width: 0 0 1 0;">
+
+                <!-- 左侧：Logo + 窗口标题 -->
+                <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
+                    <ImageView fx:id="logoImage" fitHeight="26" fitWidth="26" preserveRatio="true">
+                  <image>
+                     <Image url="@../Img/logo.png" />
+                  </image></ImageView>
+
+                    <Label fx:id="windowTitle" style="-fx-text-fill: #ffffff;                                   -fx-font-weight: bold;                                   -fx-font-size: 14.5px;" text="CoreCreator" />
+                </HBox>
+
+                <!-- 右侧：窗口控制按钮 -->
+                <HBox alignment="CENTER_RIGHT" spacing="4">
+                    <Button fx:id="minimizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" text="🗕" />
+
+                    <Button fx:id="maximizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" text="🗖" />
+
+                    <Button fx:id="closeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" text="✕" />
+                </HBox>
+            </HBox>
+
+            <!-- ==================== 2. 保留原来的 MenuBar ==================== -->
+            <MenuBar style="-fx-background-color: #1e1e1e; -fx-border-color: #3c3c3c; -fx-border-width: 0 0 1 0;">
+                <Menu text="File">
+                    <MenuItem fx:id="openFolderMenuItem" text="Open..." />
+                    <MenuItem fx:id="openSettingMenuItem" text="Settings..." />
+                </Menu>
+                <!-- 你以后可以在这里继续添加其他菜单 -->
+            </MenuBar>
+        </VBox>
+    </top>
 <!-- 主体三区域布局 -->
 <center>
     <SplitPane fx:id="mainSplitPane" dividerPositions="0.2, 0.8" orientation="HORIZONTAL" style="-fx-background-color: #1e1e1e;">
@@ -39,63 +68,25 @@
     <!-- 中间：Monaco 编辑器 -->
     <TabPane fx:id="editorContainer" prefHeight="526.0" prefWidth="414.0" style="-fx-background-color: #1e1e1e;" />
     <!-- 右侧：AI助手 -->
-        <VBox fx:id="aiView"
-              spacing="8"
-              style="-fx-background-color: #252526;">
+        <VBox fx:id="aiView" spacing="8" style="-fx-background-color: #252526;">
 
             <!-- 顶部标题 -->
-            <Label text="AI Assistant"
-                   style="-fx-text-fill: #ffffff;
-                  -fx-font-size: 14px;
-                  -fx-font-weight: bold;
-                  -fx-padding: 10 10 5 10;" />
+            <Label style="-fx-text-fill: #ffffff;                   -fx-font-size: 14px;                   -fx-font-weight: bold;                   -fx-padding: 10 10 5 10;" text="AI Assistant" />
 
             <!-- 聊天内容区（核心优化：ScrollPane） -->
-            <ScrollPane fitToWidth="true"
-                        fitToHeight="true"
-                        VBox.vgrow="ALWAYS"
-                        style="-fx-background: #1e1e1e;
-                       -fx-background-color: transparent;
-                       -fx-border-color: transparent;">
+            <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #1e1e1e;                        -fx-background-color: transparent;                        -fx-border-color: transparent;" VBox.vgrow="ALWAYS">
 
-                <WebView fx:id="chatWebView"
-                          style="-fx-control-inner-background: #1e1e1e;
-                         -fx-text-fill: #d4d4d4;
-                         -fx-font-family: 'Consolas', monospace;
-                         -fx-background-insets: 0;
-                         -fx-background-color: transparent;
-                         -fx-padding: 10;" />
+                <WebView fx:id="chatWebView" style="-fx-control-inner-background: #1e1e1e;                          -fx-text-fill: #d4d4d4;                          -fx-font-family: 'Consolas', monospace;                          -fx-background-insets: 0;                          -fx-background-color: transparent;                          -fx-padding: 10;" />
             </ScrollPane>
 
             <!-- 输入区域（Cursor风格底部输入栏） -->
-            <HBox spacing="6"
-                  alignment="CENTER_LEFT"
-                  style="-fx-padding: 6;
-                 -fx-background-color: transparent;">
+            <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 6;                  -fx-background-color: transparent;">
 
                 <!-- 输入框 -->
-                <TextArea fx:id="promptField"
-                          prefRowCount="3"
-                          prefWidth="80"
-                          wrapText="true"
-                          promptText="Ask something..."
-                          HBox.hgrow="ALWAYS"
-                          style="-fx-control-inner-background: #3c3c3c;
-                         -fx-text-fill: #ffffff;
-                         -fx-background-color: transparent;
-                         -fx-prompt-text-fill: #888888;
-                         -fx-background-radius: 8;" />
+                <TextArea fx:id="promptField" prefRowCount="3" prefWidth="80" promptText="Ask something..." style="-fx-control-inner-background: #3c3c3c;                          -fx-text-fill: #ffffff;                          -fx-background-color: transparent;                          -fx-prompt-text-fill: #888888;                          -fx-background-radius: 8;" wrapText="true" HBox.hgrow="ALWAYS" />
 
                 <!-- 发送按钮 -->
-                <Button fx:id="sendButton"
-                        text="➤"
-                        prefWidth="40"
-                        prefHeight="30"
-                        style="-fx-background-color: #007acc;
-                       -fx-text-fill: white;
-                       -fx-background-radius: 10;
-                       -fx-font-size: 14;
-                       -fx-cursor: hand;" />
+                <Button fx:id="sendButton" prefHeight="30" prefWidth="40" style="-fx-background-color: #007acc;                        -fx-text-fill: white;                        -fx-background-radius: 10;                        -fx-font-size: 14;                        -fx-cursor: hand;" text="➤" />
             </HBox>
 
         </VBox>

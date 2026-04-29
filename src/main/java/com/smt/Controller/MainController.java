@@ -25,6 +25,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.DirectoryChooser;
@@ -63,6 +65,18 @@ public class MainController implements Initializable {
     @FXML private TextArea promptField;
 
     @FXML private Button sendButton;
+
+    @FXML private HBox titleBar;
+
+    @FXML private Button minimizeButton;
+
+    @FXML private Button maximizeButton;
+
+    @FXML private Button closeButton;
+
+    // 用于窗口拖动
+    private double xOffset = 0;
+    private double yOffset = 0;
 
     private Timer saveTimer;
 
@@ -176,6 +190,8 @@ public class MainController implements Initializable {
                 }
             }
         });
+        setupTitleBar();
+        setupWindowButtons();
         initData();
     }
 
@@ -345,6 +361,67 @@ public class MainController implements Initializable {
                 });
             }
         });
+    }
+
+
+    private void setupTitleBar() {
+        titleBar.setOnMousePressed((MouseEvent event) -> {
+            xOffset = event.getSceneX();
+            yOffset = event.getSceneY();
+        });
+
+        titleBar.setOnMouseDragged((MouseEvent event) -> {
+            if (stage != null) {
+                stage.setX(event.getScreenX() - xOffset);
+                stage.setY(event.getScreenY() - yOffset);
+            }
+        });
+
+        // 可选：双击标题栏进行最大化/还原
+        titleBar.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                toggleMaximize();
+            }
+        });
+    }
+
+    /**
+     * 设置窗口控制按钮事件
+     */
+    private void setupWindowButtons() {
+        // 最小化
+        minimizeButton.setOnAction(event -> {
+            if (stage != null) {
+                stage.setIconified(true);
+            }
+        });
+
+        // 最大化 / 还原
+        maximizeButton.setOnAction(event -> toggleMaximize());
+
+        // 关闭
+        closeButton.setOnAction(event -> {
+            if (stage != null) {
+                stage.close();
+            }
+        });
+    }
+
+    /**
+     * 切换最大化 / 还原状态，并更新按钮图标
+     */
+    private void toggleMaximize() {
+        if (stage == null) return;
+
+        boolean isMaximized = stage.isMaximized();
+        stage.setMaximized(!isMaximized);
+
+        // 更新按钮图标
+        if (stage.isMaximized()) {
+            maximizeButton.setText("🗗");   // 还原图标
+        } else {
+            maximizeButton.setText("🗖");   // 最大化图标
+        }
     }
 
 
