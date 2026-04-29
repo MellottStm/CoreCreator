@@ -31,17 +31,16 @@
                   <image>
                      <Image url="@../Img/logo.png" />
                   </image></ImageView>
-
                     <Label fx:id="windowTitle" style="-fx-text-fill: #ffffff;                                   -fx-font-weight: bold;                                   -fx-font-size: 14.5px;" text="CoreCreator" />
                 </HBox>
 
                 <!-- 右侧：窗口控制按钮 -->
                 <HBox alignment="CENTER_RIGHT" spacing="4">
-                    <Button fx:id="minimizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" text="🗕" />
+                    <Button fx:id="minimizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="minimizeButton" stylesheets="@../CSS/theme.css" text="🗕" />
 
-                    <Button fx:id="maximizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" text="🗖" />
+                    <Button fx:id="maximizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="maximizeButton" stylesheets="@../CSS/theme.css" text="🗖" />
 
-                    <Button fx:id="closeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" text="✕" />
+                    <Button fx:id="closeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="closeButton" stylesheets="@../CSS/theme.css" text="✕" />
                 </HBox>
             </HBox>
 

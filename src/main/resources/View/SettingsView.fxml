@@ -36,15 +36,7 @@
                               -fx-font-size: 14px;"/>
             </HBox>
 
-            <!-- 关闭按钮 -->
-            <Button fx:id="closeButton"
-                    text="✕"
-                    style="-fx-background-color: transparent;
-                           -fx-text-fill: #cccccc;
-                           -fx-font-size: 17px;
-                           -fx-cursor: hand;
-                           -fx-min-width: 36;
-                           -fx-min-height: 32;"/>
+            <Button fx:id="closeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="closeButton" stylesheets="@../CSS/theme.css" text="✕" />
         </HBox>
     </top>
     <center>

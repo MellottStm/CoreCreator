@@ -303,11 +303,6 @@ public class MainController implements Initializable {
         }
     }
 
-
-
-
-
-
     private void sendMsg () {
         initWebView();
         if (promptField.getText() == null || promptField.getText().isBlank() || promptField.getText().isEmpty()) {
@@ -437,8 +432,13 @@ public class MainController implements Initializable {
             diffStage.setTitle("CoreCreator");
             diffStage.setScene(scene);
             diffStage.show();
+            boolean shouldShow = true;
             File file;
             for (ResultBean bean:resultBeanList) {
+                if (bean.path==null || bean.path.isEmpty()) {
+                    shouldShow = false;
+                    break;
+                }
                 switch (bean.operationType) {
                     case add:
                         diffController.addDiffFile(bean.path,"",bean.content.toString());
@@ -458,6 +458,9 @@ public class MainController implements Initializable {
                         }
                         break;
                 }
+            }
+            if (shouldShow) {
+                diffStage.show();
             }
             diffController.setEvent(new DiffController.Event() {
                 @Override

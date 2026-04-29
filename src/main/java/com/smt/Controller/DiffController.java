@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -26,6 +27,10 @@ public class DiffController implements Initializable {
     public final static Logger logger = Logger.getLogger(TAG);
 
     @FXML private HBox titleBar;
+
+    @FXML private Button minimizeButton;
+
+    @FXML private Button maximizeButton;
 
     @FXML private Button closeButton;
 
@@ -97,24 +102,54 @@ public class DiffController implements Initializable {
 
     private void setupTitleBar() {
         // 鼠标拖动窗口
-        titleBar.setOnMousePressed(event -> {
+        titleBar.setOnMousePressed((MouseEvent event) -> {
             xOffset = event.getSceneX();
             yOffset = event.getSceneY();
         });
 
-        titleBar.setOnMouseDragged(event -> {
+        titleBar.setOnMouseDragged((MouseEvent event) -> {
             if (stage != null) {
                 stage.setX(event.getScreenX() - xOffset);
                 stage.setY(event.getScreenY() - yOffset);
             }
         });
 
-        // 关闭按钮
-        closeButton.setOnAction(event -> {
-            if (stage != null) {
-                stage.close();
+        // 双击标题栏最大化/还原
+        titleBar.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && stage != null) {
+                toggleMaximize();
             }
         });
+
+        // 最小化
+        minimizeButton.setOnAction(e -> {
+            if (stage != null) stage.setIconified(true);
+        });
+
+        // 最大化 / 还原
+        maximizeButton.setOnAction(e -> toggleMaximize());
+
+        // 关闭
+        closeButton.setOnAction(e -> {
+            if (stage != null) stage.close();
+        });
+    }
+
+    /**
+     * 切换最大化状态并更新按钮图标
+     */
+    private void toggleMaximize() {
+        if (stage == null) return;
+
+        boolean isMaximized = stage.isMaximized();
+        stage.setMaximized(!isMaximized);
+
+        // 更新按钮显示
+        if (stage.isMaximized()) {
+            maximizeButton.setText("🗗");   // 还原图标
+        } else {
+            maximizeButton.setText("🗖");   // 最大化图标
+        }
     }
 
 
