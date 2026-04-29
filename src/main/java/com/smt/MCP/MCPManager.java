@@ -6,12 +6,9 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.smt.LangChain.Bean.ResultBean.OperationType.*;
-
-public class FilesManager {
+public class MCPManager {
 
     private static String TAG = "FilesManager";
 

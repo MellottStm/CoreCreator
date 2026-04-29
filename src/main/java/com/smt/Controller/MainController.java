@@ -5,9 +5,10 @@ import com.smt.Cache.CacheManager;
 import com.smt.Cache.Configure;
 import com.smt.Editor.ChatRenderer;
 import com.smt.Editor.EditorManager;
+import com.smt.Editor.FileManager;
 import com.smt.LangChain.Bean.ResultBean;
 import com.smt.LangChain.LLMManager;
-import com.smt.MCP.FilesManager;
+import com.smt.MCP.MCPManager;
 import com.smt.Main;
 import com.smt.Thread.ThreadManager;
 import dev.langchain4j.data.message.AiMessage;
@@ -40,6 +41,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class MainController implements Initializable {
 
@@ -152,6 +154,7 @@ public class MainController implements Initializable {
                 } else {
                     setText(item.getName());
                     setGraphic(new Label(item.isDirectory() ? "📁" : "📄"));
+                    setContextMenu(FileManager.create(item, MainController.this));
                 }
             }
         });
@@ -197,14 +200,64 @@ public class MainController implements Initializable {
         initData();
     }
 
+    public void handleCreateFile(File dir) {
+        inputDialog("create file", name -> {
+            try {
+                FileManager.createFile(dir, name);
+            } catch (Exception e) {
+                logger.warn("新建文件失败:" + e);
+            }
+        });
+    }
+
+    public void handleCreateFolder(File dir) {
+        inputDialog("create fold", name -> {
+            FileManager.createDirectory(dir, name);
+        });
+    }
+
+    public void handleRename(File file) {
+        inputDialog("rename", name -> {
+            FileManager.rename(file, name);
+        });
+    }
+
+    public void handleDelete(File file) {
+        confirm("del", () -> {
+            FileManager.delete(file);
+        });
+    }
+
+
+    private void inputDialog(String title, Consumer<String> callback) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(title);
+        dialog.setContentText("请输入名称:");
+
+        dialog.showAndWait().ifPresent(name -> {
+            try {
+                callback.accept(name);
+            } catch (Exception e) {
+                Toast.makeText(stage, e.getMessage(), 1000);
+            }
+        });
+    }
+
+    private void confirm(String text, Runnable ok) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, text);
+        alert.showAndWait().ifPresent(btn -> {
+            if (btn == ButtonType.OK) ok.run();
+        });
+    }
+
     private void initData () {
         JSONObject loadJson = CacheManager.loadCache();
         if (loadJson != null) {
             Configure.API_KEY = loadJson.getString("API_KEY");
             Configure.LLM_URL = loadJson.getString("LLM_URL");
             Configure.LLM_NAME = loadJson.getString("LLM_NAME");
-            if (loadJson.getString("save_path") != null && !loadJson.getString("save_path").isEmpty()) {
-                File selectedDir = new File(loadJson.getString("save_path"));
+            if (loadJson.getString("project_path") != null && !loadJson.getString("project_path").isEmpty()) {
+                File selectedDir = new File(loadJson.getString("project_path"));
                 if (selectedDir.isDirectory()) {
                     buildFileTree(selectedDir);
                     llmManager = new LLMManager(selectedDir.getPath());
@@ -474,7 +527,7 @@ public class MainController implements Initializable {
                 @Override
                 public void applyEvent() {
                     for (ResultBean resultBean : resultBeanList) {
-                        FilesManager.managerProject(resultBean.path, resultBean.content.toString(), resultBean.operationType);
+                        MCPManager.managerProject(resultBean.path, resultBean.content.toString(), resultBean.operationType);
                     }
                     diffStage.close();
                 }

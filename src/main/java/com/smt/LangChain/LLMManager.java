@@ -54,6 +54,9 @@ public class LLMManager {
     private WorkTools workTools;
 
     public LLMManager (String dirPath) {
+        if (createModel() == null || createStreamModel() == null) {
+            return;
+        }
         this.dirPath = dirPath;
         workTools = new WorkTools();
         assistant = AiServices.builder(ToolsAssistant.class)
