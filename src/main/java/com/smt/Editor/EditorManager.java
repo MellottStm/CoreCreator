@@ -113,6 +113,10 @@ public class EditorManager {
             delta.cursor = scene.getCursor();
         });
 
+        scene.setOnMouseReleased(e -> {
+            scene.setCursor(Cursor.DEFAULT);
+        });
+
         scene.setOnMouseDragged(event -> {
             Cursor cursor = delta.cursor;
             if (cursor == Cursor.DEFAULT) return;
