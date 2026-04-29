@@ -8,6 +8,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -34,22 +36,24 @@ public class DiffController implements Initializable {
 
     private final Map<String, DiffFile> diffFiles = new LinkedHashMap<>();
 
+    private Stage stage;
+
     // 高亮样式定义
     private static final String RED_HIGHLIGHT = "deleted-line";   // 红色（删除）
 
     private static final String GREEN_HIGHLIGHT = "added-line";   // 绿色（新增）
+
+    private Event event;
 
     public enum HighType {
         RED,
         GREEN
     }
 
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupCodeAreas();
         setupFileListView();
-//        loadTestData();
         // 默认选中第一个文件
         if (!fileListView.getItems().isEmpty()) {
             fileListView.getSelectionModel().select(0);
@@ -57,16 +61,30 @@ public class DiffController implements Initializable {
         applyBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
+                if (event != null) {
+                    event.applyEvent();
+                }
             }
         });
         reverseBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-
+                if (stage != null) {
+                    stage.close();
+                }
             }
         });
     }
+
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    public void setEvent (Event event) {
+        this.event = event;
+    }
+
 
     /**
      * 外部调用此方法添加一个 diff 文件
@@ -266,4 +284,9 @@ public class DiffController implements Initializable {
             highlightLines(rightCodeArea, highlightTypes);
         }
     }
+
+    public interface Event {
+        void applyEvent ();
+    }
+
 }

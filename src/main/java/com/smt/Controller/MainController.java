@@ -33,6 +33,8 @@ import javafx.stage.WindowEvent;
 import org.apache.log4j.Logger;
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class MainController implements Initializable {
@@ -332,13 +334,64 @@ public class MainController implements Initializable {
                     }
                 }).whenComplete((resultBeanList, throwable) -> {
                     if (resultBeanList != null) {
-                        for (ResultBean resultBean :resultBeanList) {
-                            FilesManager.managerProject(resultBean.path,resultBean.content.toString(),resultBean.operationType);
-                        }
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                showDiff(resultBeanList);
+                            }
+                        });
                     }
                 });
             }
         });
+    }
+
+
+    private void showDiff (List<ResultBean> resultBeanList) {
+        try {
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/DiffView.fxml"));
+            Parent root = loader.load();
+            DiffController diffController = loader.getController();
+            Stage diffStage = new Stage();
+            diffController.setStage(diffStage);
+            Scene scene = new Scene(root, 1600, 900);
+            diffStage.setTitle("CoreCreator");
+            diffStage.setScene(scene);
+            diffStage.show();
+            File file;
+            for (ResultBean bean:resultBeanList) {
+                switch (bean.operationType) {
+                    case add:
+                        diffController.addDiffFile(bean.path,"",bean.content.toString());
+                        break;
+                    case update:
+                        file = new File(bean.path);
+                        if (file.exists()) {
+                            String content = Files.readString(Paths.get(bean.path));
+                            diffController.addDiffFile(bean.path,content, bean.content.toString());
+                        }
+                        break;
+                    case del:
+                        file = new File(bean.path);
+                        if (file.exists()) {
+                            String content = Files.readString(Paths.get(bean.path));
+                            diffController.addDiffFile(bean.path,content, "");
+                        }
+                        break;
+                }
+            }
+            diffController.setEvent(new DiffController.Event() {
+                @Override
+                public void applyEvent() {
+                    for (ResultBean resultBean : resultBeanList) {
+                        FilesManager.managerProject(resultBean.path, resultBean.content.toString(), resultBean.operationType);
+                    }
+                    diffStage.close();
+                }
+            });
+        } catch (Exception e) {
+            logger.warn(e);
+        }
     }
 
     /**

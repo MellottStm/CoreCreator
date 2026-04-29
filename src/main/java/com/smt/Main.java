@@ -13,40 +13,6 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class Main extends Application {
-
-
-//    @Override
-//    public void start(Stage primaryStage) throws Exception {
-//        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/DiffView.fxml"));
-//        Parent root = loader.load();
-//
-//
-//        DiffController diffController = loader.getController();
-//        diffController.addDiffFile("Main.java",
-//                "package com.smt;\n" +
-//                "\n" +
-//                "public class Main {\n" +
-//                "    public static void main(String[] args) {\n" +
-//                "\n" +
-//                "    }\n" +
-//                "}",
-//                "package com.smt;\n" +
-//                "\n" +
-//                "public class Main {\n" +
-//                "    public static void main(String[] args) {\n" +
-//                "        System.out.println(\"fuck you\");\n" +
-//                        "\n" +
-//                        "\n" +
-//                        "\n" +
-//                "    }\n" +
-//                "}");
-//
-//        Scene scene = new Scene(root,1600,900);
-//        primaryStage.setTitle("CoreCreator");
-//        primaryStage.setScene(scene);
-//        primaryStage.show();
-//    }
-
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/MainView.fxml"));
@@ -64,7 +30,6 @@ public class Main extends Application {
         stage.setScene(scene);
         stage.show();
     }
-
     public static void main(String[] args) {
         launch(args);
     }
