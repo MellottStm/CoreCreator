@@ -61,6 +61,8 @@ public class MainController implements Initializable {
 
     private Tab currentTab;  // 当前选中的 Tab
 
+    private String currentProjectPath;
+
     @FXML private SplitPane mainSplitPane;
 
     @FXML private WebView chatWebView;
@@ -261,6 +263,7 @@ public class MainController implements Initializable {
                 if (selectedDir.isDirectory()) {
                     buildFileTree(selectedDir);
                     llmManager = new LLMManager(selectedDir.getPath());
+                    currentProjectPath = selectedDir.getPath();
                     startFileWatcher(selectedDir);
                 }
             }
@@ -627,7 +630,12 @@ public class MainController implements Initializable {
                 System.out.println("loading fail");
             }
             settingsStage.setScene(scene);
-            settingsController.setStage(settingsStage);
+            settingsController.setStage(settingsStage, new SettingsController.SettingEvent() {
+                @Override
+                public void CloseEvent() {
+                    llmManager = new LLMManager(currentProjectPath);
+                }
+            });
             settingsStage.initStyle(StageStyle.UNDECORATED);
             settingsStage.setTitle("Settings");
             settingsStage.show();
@@ -646,6 +654,7 @@ public class MainController implements Initializable {
             CacheManager.saveProjectPath(selectedDir.getPath());
             buildFileTree(selectedDir);
             llmManager = new LLMManager(selectedDir.getPath());
+            currentProjectPath = selectedDir.getPath();
             startFileWatcher(selectedDir);
         }
     }

@@ -91,12 +91,13 @@ public class SettingsController implements Initializable {
     }
 
 
-    public void setStage(Stage stage) {
+    public void setStage(Stage stage,SettingEvent event) {
         this.stage = stage;
         EditorManager.makeResizable(stage,5,480,280);
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
+                event.CloseEvent();
                 saveSettings();
             }
         });
@@ -115,6 +116,11 @@ public class SettingsController implements Initializable {
         Toast.makeText(stage, "大模型设置已保存！", 1500);
 
         stage.close();
+    }
+
+
+    public interface SettingEvent {
+        void CloseEvent ();
     }
 
 }
