@@ -72,24 +72,74 @@ public class DiffController implements Initializable {
      * 外部调用此方法添加一个 diff 文件
      */
     public void addDiffFile(String fileName, String original, String modified) {
-
-        List<String> originalList = Arrays.asList(original.split("\\r?\\n", -1));
-        List<String> modifiedList = Arrays.asList(modified.split("\\r?\\n", -1));
-
-
+        // 1. 分割文本
+        List<String> originalList = Arrays.stream(original.split("\\n", -1)).toList();
+        List<String> modifiedList = Arrays.stream(modified.split("\\n", -1)).toList();
+        // 2. 使用 DiffManager 计算差异
         List<Diff> diffResult = DiffManager.compareTexts(originalList, modifiedList);
+        // 3. 准备构建最终显示的数据
+        List<String> finalLeftLines = new ArrayList<>();
+        List<String> finalRightLines = new ArrayList<>();
+        List<HighType> leftHighlightTypes = new ArrayList<>();
+        List<HighType> rightHighlightTypes = new ArrayList<>();
+        // 4. 遍历 Diff 结果，根据 Tag 构建界面数据
+        for (Diff diff : diffResult) {
+            switch (diff.tag) {
+                case EQUAL:
+                    // 两边都显示，且不加颜色
+                    finalLeftLines.add(diff.originalValue);
+                    finalRightLines.add(diff.modifiedValue);
+                    leftHighlightTypes.add(null);
+                    rightHighlightTypes.add(null);
+                    break;
 
-        // 添加到列表并默认选中
-        if (!fileListView.getItems().contains(fileName)) {
-            fileListView.getItems().add(fileName);
+                case DEL:
+                    // 原文有，修改后无 -> 左边显示内容（标红），右边显示空
+                    finalLeftLines.add(diff.originalValue);
+                    finalRightLines.add("");
+                    leftHighlightTypes.add(HighType.RED);
+                    rightHighlightTypes.add(null);
+                    break;
+
+                case INSERT:
+                    // 原文无，修改后有 -> 左边显示空，右边显示内容（标绿）
+                    finalLeftLines.add("");
+                    finalRightLines.add(diff.modifiedValue);
+                    leftHighlightTypes.add(null);
+                    rightHighlightTypes.add(HighType.GREEN);
+                    break;
+
+                case CHANGE:
+                    // 内容改变 -> Git 通常表现为：删除旧行 + 插入新行
+                    // 所以我们需要添加两行数据
+                    // 第一行：显示旧内容（左边），右边为空
+                    finalLeftLines.add(diff.originalValue);
+                    finalRightLines.add(diff.modifiedValue);
+                    leftHighlightTypes.add(HighType.RED);
+                    rightHighlightTypes.add(HighType.GREEN);
+                    break;
+            }
         }
-        fileListView.getSelectionModel().select(fileName); // 选中当前添加的文件
+        // 5. 将 List 转回 String
+        String finalOriginalText = String.join("\n", finalLeftLines);
+        String finalModifiedText = String.join("\n", finalRightLines);
 
+        // 6. 存储结果 (HighType 参数传 null，因为我们使用的是 List<HighType>)
+        diffFiles.put(fileName, new DiffFile(
+                finalOriginalText,
+                finalModifiedText,
+                leftHighlightTypes,
+                rightHighlightTypes
+        ));
+        fileListView.getItems().add(fileName);
+        // 默认选中
+        if (!fileListView.getItems().isEmpty()) {
+            fileListView.getSelectionModel().select(0);
+        }
     }
 
     private void setupFileListView() {
         fileListView.setStyle("-fx-background-color: #2b2b2b; -fx-text-fill: #cccccc;");
-
         fileListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 showDiff(newVal);
@@ -100,7 +150,6 @@ public class DiffController implements Initializable {
     private void showDiff(String fileName) {
         DiffFile diff = diffFiles.get(fileName);
         if (diff == null) return;
-
         // 注意：这里传入的是颜色类型列表，而不是行号
         setLeftText(diff.originalText, diff.leftHighlightTypes);
         setRightText(diff.modifiedText, diff.rightHighlightTypes);
