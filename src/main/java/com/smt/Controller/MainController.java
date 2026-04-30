@@ -588,7 +588,8 @@ public class MainController implements Initializable {
             boolean shouldShow = true;
             File file;
             for (ResultBean bean:resultBeanList) {
-                if (bean.path==null || bean.path.isEmpty()) {
+                logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
+                if (bean.path == null || bean.path.isEmpty()) {
                     shouldShow = false;
                     break;
                 }
@@ -625,7 +626,7 @@ public class MainController implements Initializable {
                 }
             });
         } catch (Exception e) {
-            logger.warn(e);
+            logger.warn("操作文件异常:" + e);
         }
     }
 

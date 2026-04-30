@@ -46,6 +46,7 @@ public class MCPManager {
         try {
             File file = new File(path);
             if (path.endsWith(".docx")) {
+                logger.info("这是docx文件类型!");
                 EditorManager.writeDocx(file,content);
             } else {
                 File parentDir = file.getParentFile();
