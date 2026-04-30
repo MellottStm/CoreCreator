@@ -17,8 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -170,6 +169,43 @@ public class ProjectListController implements Initializable {
             });
         });
         projectListView.setCellFactory(list -> new ListCell<File>() {
+            private final Label name = new Label();
+            private final Label path = new Label();
+            private final Button deleteBtn = new Button("✕");
+
+            private final VBox textBox = new VBox(name, path);
+            private final HBox topRow = new HBox();
+            private final BorderPane root = new BorderPane();
+
+            {
+                // 样式
+                name.setStyle("-fx-text-fill: white; -fx-font-size: 14;");
+                path.setStyle("-fx-text-fill: #888888; -fx-font-size: 11;");
+
+                deleteBtn.setStyle(
+                        "-fx-background-color: transparent; " +
+                                "-fx-text-fill: #aaaaaa; " +
+                                "-fx-font-size: 12;"
+                );
+
+                // hover 效果（更像 IDEA）
+                deleteBtn.setOnMouseEntered(e ->
+                        deleteBtn.setStyle("-fx-text-fill: #ff5c5c; -fx-background-color: transparent;")
+                );
+                deleteBtn.setOnMouseExited(e ->
+                        deleteBtn.setStyle("-fx-text-fill: #aaaaaa; -fx-background-color: transparent;")
+                );
+
+                // 布局
+                topRow.getChildren().addAll(name, new Pane(), deleteBtn);
+                HBox.setHgrow(topRow.getChildren().get(1), Priority.ALWAYS);
+
+                textBox.setSpacing(3);
+
+                root.setTop(topRow);
+                root.setBottom(path);
+                root.setStyle("-fx-padding: 8;");
+            }
             @Override
             protected void updateItem(File item, boolean empty) {
                 super.updateItem(item, empty);
@@ -177,16 +213,15 @@ public class ProjectListController implements Initializable {
                 if (empty || item == null) {
                     setGraphic(null);
                 } else {
-                    Label name = new Label(item.getName());
-                    name.setStyle("-fx-text-fill: white; -fx-font-size: 14;");
+                    name.setText(item.getName());
+                    path.setText(item.getAbsolutePath());
+                    deleteBtn.setOnAction(e -> {
+                        e.consume(); // 防止触发 ListView 选中
+                        projectList.remove(item);
+                        CacheManager.savePathList(projectList);
+                    });
 
-                    Label path = new Label(item.getAbsolutePath());
-                    path.setStyle("-fx-text-fill: #888888; -fx-font-size: 11;");
-
-                    VBox box = new VBox(name, path);
-                    box.setSpacing(3);
-
-                    setGraphic(box);
+                    setGraphic(root);
                 }
             }
         });
