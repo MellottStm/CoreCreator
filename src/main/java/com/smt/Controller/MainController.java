@@ -182,7 +182,7 @@ public class MainController implements Initializable {
         });
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
-        openCfgMenuItem.setOnAction(e-> openSetting());
+        openCfgMenuItem.setOnAction(e-> openCfg());
         closeProjectMenuItem.setOnAction(e-> closeProject());
         exitMenuItem.setOnAction(e->exit());
         //5. 自动保存文件
@@ -693,7 +693,7 @@ public class MainController implements Initializable {
 
 
     //打开设置对话框
-    private void openSetting ()  {
+    private void openCfg()  {
         try {
             FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/SettingsView.fxml"));
             Parent root = loader.load();

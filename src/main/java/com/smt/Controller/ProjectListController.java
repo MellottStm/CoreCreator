@@ -102,6 +102,11 @@ public class ProjectListController implements Initializable {
                 }
             }
             if (loadJson.getString("project_path") != null && !loadJson.getString("project_path").isEmpty()) {
+                File file = new File(loadJson.getString("project_path"));
+                if (!file.exists()) {
+                    Toast.makeText(stage,"\""+file.getAbsolutePath() + "\"项目路径不存在!",2000);
+                    return;
+                }
                 openMain(loadJson.getString("project_path"));
             }
         }
@@ -113,10 +118,12 @@ public class ProjectListController implements Initializable {
      */
     private void openSelectedProject() {
         File selected = projectListView.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            logger.info("打开项目: " + selected.getAbsolutePath());
-            openMain(selected.getAbsolutePath());
+        if (!selected.exists()) {
+            Toast.makeText(stage,"\""+selected.getAbsolutePath() + "\"项目路径不存在!",2000);
+            return;
         }
+        logger.info("打开项目: " + selected.getAbsolutePath());
+        openMain(selected.getAbsolutePath());
     }
 
 
