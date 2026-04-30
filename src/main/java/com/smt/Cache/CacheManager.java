@@ -1,7 +1,9 @@
 package com.smt.Cache;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.smt.Controller.Toast;
+import javafx.collections.ObservableList;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -65,6 +67,36 @@ public class CacheManager {
                 saveJson = new JSONObject();
             }
             saveJson.put("project_path", projectPath);
+            Path path = Paths.get(CACHE_FILE);
+            Files.createDirectories(path.getParent());
+            Files.writeString(path, saveJson.toJSONString(), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            logger.warn(e);
+        }
+    }
+
+
+    public static void savePathList (ObservableList<File> projectList) {
+        try {
+            // 更新数据
+            // 确保目录存在
+            File file = new File(CACHE_FILE);
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            JSONObject saveJson = loadCache();
+            // 写入 JSON
+            if (saveJson == null) {
+                saveJson = new JSONObject();
+            }
+            JSONArray pathArray = new JSONArray();
+            for (File projectDir:projectList) {
+                JSONObject dirJson = new JSONObject();
+                dirJson.put("path",projectDir.getAbsolutePath());
+                pathArray.add(dirJson);
+            }
+            saveJson.put("pathList",pathArray);
             Path path = Paths.get(CACHE_FILE);
             Files.createDirectories(path.getParent());
             Files.writeString(path, saveJson.toJSONString(), StandardCharsets.UTF_8);

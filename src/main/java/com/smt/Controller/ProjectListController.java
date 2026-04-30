@@ -1,6 +1,11 @@
 package com.smt.Controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.smt.Cache.CacheManager;
+import com.smt.Cache.Configure;
 import com.smt.Editor.EditorManager;
+import com.smt.LangChain.LLMManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -60,6 +65,7 @@ public class ProjectListController implements Initializable {
     public void setStage(Stage stage) {
         this.stage = stage;
         EditorManager.makeResizable(this.stage,5,600,400);
+        initData();
     }
 
     /**
@@ -73,9 +79,35 @@ public class ProjectListController implements Initializable {
             openMain(dir.getAbsolutePath());
             if (!projectList.contains(dir)) {
                 projectList.add(dir);
+                CacheManager.savePathList(projectList);
             }
         }
     }
+
+
+    public void projectAdd (String path) {
+        if (!projectList.contains(path)) {
+            projectList.add(new File(path));
+            CacheManager.savePathList(projectList);
+        }
+    }
+
+
+    private void initData () {
+        JSONObject loadJson = CacheManager.loadCache();
+        if (loadJson != null) {
+            if (loadJson.getJSONArray("pathList") != null) {
+                JSONArray projectListJson = loadJson.getJSONArray("pathList");
+                for (int i = 0;i < projectListJson.size();i++) {
+                    projectList.add(new File(projectListJson.getJSONObject(i).getString("path")));
+                }
+            }
+            if (loadJson.getString("project_path") != null && !loadJson.getString("project_path").isEmpty()) {
+                openMain(loadJson.getString("project_path"));
+            }
+        }
+    }
+
 
     /**
      * 打开选中的项目
@@ -107,7 +139,7 @@ public class ProjectListController implements Initializable {
             mainStage.setTitle("CoreCreator");
             mainStage.setScene(scene);
             mainStage.show();
-            mainController.setStage(mainStage,stage);
+            mainController.setStage(mainStage,stage,this);
             mainController.openProject(path);
             stage.hide();
         } catch (Exception e) {
@@ -120,13 +152,6 @@ public class ProjectListController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-//        // 模拟初始数据（你可以替换为缓存）
-//        projectList.addAll(
-//                new File("F:/TestProject1"),
-//                new File("F:/DemoApp"),
-//                new File("F:/MyWorkspace/HelloWorld")
-//        );
-
         // 过滤器
         filteredList = new FilteredList<>(projectList, p -> true);
         projectListView.setItems(filteredList);

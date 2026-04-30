@@ -51,7 +51,7 @@ public class MainController implements Initializable {
     // FXML 注入的控件
     @FXML private MenuItem openFolderMenuItem;
 
-    @FXML private MenuItem openSettingMenuItem;
+    @FXML private MenuItem openCfgMenuItem;
 
     @FXML private MenuItem closeProjectMenuItem;
 
@@ -113,9 +113,12 @@ public class MainController implements Initializable {
     // 新增：用于存储展开状态的路径集合
     private Set<String> expandedPaths = new HashSet<>();
 
-    public void setStage (Stage stage,Stage projectStage) {
+    private ProjectListController projectListController;
+
+    public void setStage (Stage stage,Stage projectStage,ProjectListController controller) {
         this.stage= stage;
         this.projectStage = projectStage;
+        this.projectListController = controller;
         EditorManager.makeResizable(stage,5,800,600);
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -179,7 +182,7 @@ public class MainController implements Initializable {
         });
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
-        openSettingMenuItem.setOnAction(e-> openSetting());
+        openCfgMenuItem.setOnAction(e-> openSetting());
         closeProjectMenuItem.setOnAction(e-> closeProject());
         exitMenuItem.setOnAction(e->exit());
         //5. 自动保存文件
@@ -208,7 +211,6 @@ public class MainController implements Initializable {
         });
         setupTitleBar();
         setupWindowButtons();
-        initData();
     }
 
 
@@ -331,25 +333,13 @@ public class MainController implements Initializable {
         }
     }
 
-    private void initData () {
+    public void openProject (String path) {
         JSONObject loadJson = CacheManager.loadCache();
         if (loadJson != null) {
             Configure.API_KEY = loadJson.getString("API_KEY");
             Configure.LLM_URL = loadJson.getString("LLM_URL");
             Configure.LLM_NAME = loadJson.getString("LLM_NAME");
-            if (loadJson.getString("project_path") != null && !loadJson.getString("project_path").isEmpty()) {
-                File selectedDir = new File(loadJson.getString("project_path"));
-                if (selectedDir.isDirectory()) {
-                    buildFileTree(selectedDir);
-                    llmManager = new LLMManager(selectedDir.getPath());
-                    currentProjectPath = selectedDir.getPath();
-                    startFileWatcher(selectedDir);
-                }
-            }
         }
-    }
-
-    public void openProject (String path) {
         CacheManager.saveProjectPath(path);
         buildFileTree(new File(path));
         llmManager = new LLMManager(path);
@@ -449,7 +439,6 @@ public class MainController implements Initializable {
     }
 
     private void sendMsg () {
-        initWebView();
         if (promptField.getText() == null || promptField.getText().isBlank() || promptField.getText().isEmpty()) {
             Toast.makeText(stage, "输入框不能为空!", 1000);
             return;
@@ -458,6 +447,7 @@ public class MainController implements Initializable {
             Toast.makeText(stage, "未设置大模型参数!", 1000);
             return;
         }
+        initWebView();
         chatMessageList.add(UserMessage.from(promptField.getText()));
         appendUserMessage(promptField.getText());
         promptField.clear();
@@ -738,6 +728,7 @@ public class MainController implements Initializable {
         Stage stage = (Stage) editorContainer.getScene().getWindow();
         File selectedDir = chooser.showDialog(stage);
         if (selectedDir != null && selectedDir.isDirectory()) {
+            projectListController.projectAdd(selectedDir.getAbsolutePath());
             CacheManager.saveProjectPath(selectedDir.getPath());
             buildFileTree(selectedDir);
             llmManager = new LLMManager(selectedDir.getPath());
