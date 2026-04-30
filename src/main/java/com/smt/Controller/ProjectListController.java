@@ -85,7 +85,7 @@ public class ProjectListController implements Initializable {
 
 
     public void projectAdd (String path) {
-        if (!projectList.contains(path)) {
+        if (!projectList.contains(new File(path))) {
             projectList.add(new File(path));
             CacheManager.savePathList(projectList);
         }
