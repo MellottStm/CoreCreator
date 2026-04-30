@@ -602,7 +602,7 @@ public class MainController implements Initializable {
                 if (bean.path.equals("none") && bean.operationType== ResultBean.OperationType.none) {
                     continue;
                 }
-                if (bean.path == null || bean.path.isEmpty()) {
+                if (bean.path.isEmpty()) {
                     shouldShow = false;
                     break;
                 }
