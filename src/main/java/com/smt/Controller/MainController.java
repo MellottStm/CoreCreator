@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.smt.Cache.CacheManager;
 import com.smt.Cache.Configure;
 import com.smt.Editor.ChatRenderer;
+import com.smt.Editor.EditorAdapter;
 import com.smt.Editor.EditorManager;
 import com.smt.Editor.FileManager;
 import com.smt.LangChain.Bean.ResultBean;
@@ -18,6 +19,7 @@ import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -123,19 +125,23 @@ public class MainController implements Initializable {
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-                if (saveTimer!=null) {
-                    saveTimer.purge();
-                    saveTimer.cancel();
-                    saveTimer = null;
-                }
-                if (fileWatchTimer != null) {
-                    fileWatchTimer.purge();
-                    fileWatchTimer.cancel();
-                    fileWatchTimer = null;
-                }
-                logger.info("已关闭Main窗口!");
+                releaseTimer();
             }
         });
+    }
+
+    private void releaseTimer () {
+        if (saveTimer != null) {
+            saveTimer.purge();
+            saveTimer.cancel();
+            saveTimer = null;
+        }
+        if (fileWatchTimer != null) {
+            fileWatchTimer.purge();
+            fileWatchTimer.cancel();
+            fileWatchTimer = null;
+        }
+        logger.info("已关闭Main窗口!");
     }
 
 
@@ -221,6 +227,7 @@ public class MainController implements Initializable {
         if (stage != null) {
             stage.close();
         }
+        releaseTimer();
     }
 
     private void closeProject () {
@@ -230,6 +237,7 @@ public class MainController implements Initializable {
         if (stage != null) {
             stage.close();
         }
+        releaseTimer();
     }
 
 
@@ -537,6 +545,7 @@ public class MainController implements Initializable {
             if (stage != null) {
                 stage.close();
             }
+            releaseTimer();
         });
     }
 
@@ -814,34 +823,43 @@ public class MainController implements Initializable {
 
     /** 把文件内容加载到 Monaco 编辑器 */
     private void loadFileToEditor(File file) {
+        // 已打开 → 直接切换
         if (EditorManager.openTabs.containsKey(file)) {
-            Tab existingTab = EditorManager.openTabs.get(file);
-            editorContainer.getSelectionModel().select(existingTab);
+            editorContainer.getSelectionModel().select(EditorManager.openTabs.get(file));
             return;
         }
-        // 创建新 Tab
-        Tab tab = new Tab(file.getName());
-        tab.setTooltip(new Tooltip(file.getAbsolutePath()));  // 鼠标悬停显示完整路径
-        // 为每个 Tab 创建独立的 MonacoFX 编辑器
+
         MonacoFX monacoFX = EditorManager.getMonacoFXFromFile(file);
-        tab.setContent(monacoFX);
-        // 记录映射关系
-        EditorManager.openTabs.put(file, tab);
-        EditorManager.tabToEditor.put(tab, monacoFX);
-        EditorManager.tabToFile.put(tab, file);
-        EditorManager.lastSavedContent.put(tab,monacoFX.getEditor().getDocument().getText());
-        EditorManager.tabToLastModifiedTime.put(tab, file.lastModified());
-        // 添加到 TabPane 并选中
-        editorContainer.getTabs().add(tab);
-        editorContainer.getSelectionModel().select(tab);
-        // Tab 关闭事件：清理映射
-        tab.setOnClosed(e -> {
-            EditorManager.openTabs.remove(file);
-            EditorManager.tabToEditor.remove(tab);
-            EditorManager.tabToFile.remove(tab);
-            EditorManager.lastSavedContent.remove(tab);
-            logger.info("已经关闭tab!");
-        });
+
+        // 🧠 1. 可编辑文件（Monaco）
+        if (monacoFX != null) {
+
+            Tab tab = EditorManager.createTab(editorContainer,file,monacoFX, false);
+            EditorManager.registerTab(file, tab, monacoFX, false);
+
+        } else {
+
+            // 🧠 2. 只读文件
+            String content = null;
+
+            if (EditorManager.isDocx(file)) {
+                logger.info("检测到是docx文件");
+                content = EditorManager.readDocx(file);
+
+            } else if (EditorManager.isPdf(file)) {
+                logger.info("检测到是pdf文件");
+                content = EditorManager.readPdf(file);
+
+            } else {
+                Toast.makeText(stage, "The file type is not supported!", 5000);
+                return;
+            }
+
+            TextArea textArea = EditorManager.createReadOnlyTextArea(content);
+            Tab tab = EditorManager.createTab(editorContainer,file, textArea, true);
+            EditorManager.registerTab(file, tab, textArea, true);
+        }
+
         editorContainer.setVisible(true);
     }
 
