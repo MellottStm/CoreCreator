@@ -2,7 +2,7 @@ package com.smt.LangChain.Bean;
 
 import dev.langchain4j.model.output.structured.Description;
 
-@Description("AI助手的工作意图输出格式")
+@Description("AI助手的工作意图输出数据结构")
 public class ResultBean {
 
     public enum OperationType {
@@ -12,11 +12,11 @@ public class ResultBean {
         none
     }
 
-    @Description("输出的文件内容")
+    @Description("更改文件的完整内容")
     public StringBuffer content;
 
 
-    @Description("更改的文件路径")
+    @Description("需要更改的文件路径")
     public String path;
 
     @Description("文件的更改类型")
