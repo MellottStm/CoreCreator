@@ -119,6 +119,7 @@ public class LLMManager {
         workTools.setCompletableFuture(completableFuture);
         ToolsPrompt.intentClass intentClass = classification(chatMessageList);
         StringBuffer resultBuffer = new StringBuffer();
+        logger.info("意图分类的结果:" + intentClass);
         if (intentClass.equals(ToolsPrompt.intentClass.work)) {
             requestLLMForWorkStream(chatMessageList).onPartialResponse(new Consumer<String>() {
                 @Override
