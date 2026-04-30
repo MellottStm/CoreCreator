@@ -1,5 +1,6 @@
 package com.smt.LangChain;
 
+import com.smt.Editor.FileManager;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -62,8 +63,8 @@ public class ToolsPrompt {
             "\"xxx\"//基于用户请求你更改文件后的完整内容\n" +
             "更改的文件路径是F:\\龙傲天传奇\\第二章.txt\n" +
             "文件的更改类型是add\n" +
-            "三、输出的内容必须满足用户的请求，并且是文件更改后的完整内容\n" +
-            "四、输出更改的文件完整路径，该路径必须在用户的项目根路径内，如果没有要更改的文件，则输出none\n" +
+            "三、输出的内容必须满足用户的请求，并且是新增文件或者文件更改后的完整内容\n" +
+            "四、输出更改或者新增的文件完整路径，创建的文件类型要满足用户的需求，如果用户的项目文件大部分是pdf或者docx，则只能创建docx文件，该路径必须在用户的项目根路径内，如果没有要更改的文件，则输出none\n" +
             "五、更改的类型有add、del、update、none，这些字段的规则如下，必须严格遵守规则进行输出：\n" +
             "1、add表示新增的文件\n" +
             "2、del表示删除的文件\n" +
@@ -140,8 +141,8 @@ public class ToolsPrompt {
             "}\n" +
             "更改的文件路径是F:\\ATest\\ATest\\src\\main\\java\\com\\smt\\Main.java\n" +
             "文件的更改类型是update\n" +
-            "三、输出的内容必须满足用户的请求，并且是文件更改后的完整内容\n" +
-            "四、输出更改的文件完整路径，该路径必须在用户的项目根路径内，如果没有要更改的文件，则输出none\n" +
+            "三、输出的内容必须满足用户的请求，并且是新增文件或者文件更改后的完整内容\n" +
+            "四、输出新增或者更改的文件完整路径，该路径必须在用户的项目根路径内，如果没有要更改的文件，则输出none\n" +
             "五、更改的类型有add、del、update、none，这些字段的规则如下，必须严格遵守规则进行输出：\n" +
             "1、add表示新增的文件\n" +
             "2、del表示删除的文件\n" +
@@ -163,12 +164,12 @@ public class ToolsPrompt {
             Stream<Path> paths = Files.walk(startPath);
             paths.filter(Files::isRegularFile) // 只处理文件
             .forEach(path -> {
-                try {
-                    // 读取文件内容（默认 UTF-8）
-                    String content = Files.readString(path, StandardCharsets.UTF_8);
+                // 读取文件内容（默认 UTF-8）
+                String content = FileManager.readProjectFileContent(path);
+                if (content != null) {
                     result.append("文件路径为:").append(path.toAbsolutePath()).append("的文件内容为:\n").append(content).append("\n");
-                } catch (IOException e) {
-                    logger.info("读取失败: " + e.getMessage());
+                } else {
+                    result.append("该项目有文件:").append(path.toAbsolutePath()).append("\n");
                 }
             });
 

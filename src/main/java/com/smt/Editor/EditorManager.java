@@ -141,25 +141,7 @@ public class EditorManager {
         return false;
     }
 
-    public static void appendDocx(File file, String text) {
-        try (FileInputStream fis = new FileInputStream(file);
-             XWPFDocument doc = new XWPFDocument(fis)) {
-
-            for (String line : text.split("\n")) {
-                XWPFParagraph p = doc.createParagraph();
-                XWPFRun run = p.createRun();
-                run.setText(line);
-            }
-
-            try (FileOutputStream out = new FileOutputStream(file)) {
-                doc.write(out);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    //创建并且写入docx
     public static void writeDocx(File file, String text) {
         try (XWPFDocument doc = new XWPFDocument()) {
 
@@ -174,7 +156,7 @@ public class EditorManager {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("创建Docx文件失败:" + e);
         }
     }
 

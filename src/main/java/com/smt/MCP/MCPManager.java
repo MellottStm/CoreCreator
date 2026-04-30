@@ -1,5 +1,6 @@
 package com.smt.MCP;
 
+import com.smt.Editor.EditorManager;
 import com.smt.LangChain.Bean.ResultBean;
 import org.apache.log4j.Logger;
 
@@ -19,29 +20,12 @@ public class MCPManager {
     public static void managerProject (String path, String content, ResultBean.OperationType type) {
         switch (type) {
             case add:
-                addFile(path,content);
+            case update:
+                updateFile(path,content);
                 break;
             case del:
                 delFile(path);
                 break;
-            case update:
-                updateFile(path,content);
-                break;
-        }
-    }
-
-
-    private static void addFile (String path,String content) {
-        try {
-            File file = new File(path);
-            File parentDir = file.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
-            }
-            Files.createDirectories(Paths.get(path).getParent());
-            Files.writeString(Paths.get(path), content, StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            logger.warn("操作文件失败:" + e);
         }
     }
 
@@ -61,12 +45,16 @@ public class MCPManager {
     private static void updateFile (String path,String content) {
         try {
             File file = new File(path);
-            File parentDir = file.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
+            if (path.endsWith(".docx")) {
+                EditorManager.writeDocx(file,content);
+            } else {
+                File parentDir = file.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+                Files.createDirectories(Paths.get(path).getParent());
+                Files.writeString(Paths.get(path), content, StandardCharsets.UTF_8);
             }
-            Files.createDirectories(Paths.get(path).getParent());
-            Files.writeString(Paths.get(path), content, StandardCharsets.UTF_8);
         } catch (Exception e) {
             logger.warn("操作文件失败:" + e);
         }

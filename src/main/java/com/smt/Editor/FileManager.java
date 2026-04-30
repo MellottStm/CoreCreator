@@ -5,28 +5,32 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Set;
 
 public class FileManager {
 
+    public static String TAG = "FileManager";
+
+    public final static Logger logger = Logger.getLogger(TAG);
+
     public static File createFile(File dir, String name) throws Exception {
         if (name == null || name.trim().isEmpty()) {
             throw new RuntimeException("文件名不能为空");
         }
-
         File file = new File(dir, name);
-
         if (file.exists()) {
             throw new RuntimeException("文件已存在");
         }
-
         if (!file.createNewFile()) {
             throw new RuntimeException("创建失败");
         }
-
         return file;
     }
 
@@ -141,5 +145,23 @@ public class FileManager {
 
         return menu;
     }
+
+
+    public static String readProjectFileContent (Path path) {
+        String content = null;
+        try {
+            content = Files.readString(path, StandardCharsets.UTF_8);
+        } catch (Exception e){
+            logger.info("读取项目文件失败:" + e);
+            if (EditorManager.isDocx(path.toFile())) {
+                content = EditorManager.readDocx(path.toFile());
+            } else if (EditorManager.isPdf(path.toFile())) {
+                content = EditorManager.readPdf(path.toFile());
+            }
+        }
+        return content;
+    }
+
+
 
 }
