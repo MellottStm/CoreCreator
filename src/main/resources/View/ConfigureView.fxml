@@ -12,7 +12,7 @@
 <?import javafx.scene.image.Image?>
 <BorderPane prefHeight="280" prefWidth="480" style="-fx-background-color: #1e1e1e;"
             xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.smt.Controller.SettingsController">
+            fx:controller="com.smt.Controller.ConfigureController">
     <top>
         <HBox fx:id="titleBar"
               alignment="CENTER_LEFT"
@@ -30,7 +30,7 @@
                     </image></ImageView>
 
                 <Label fx:id="CoreCreator"
-                       text="Settings"
+                       text="Configure"
                        style="-fx-text-fill: #ffffff;
                               -fx-font-weight: bold;
                               -fx-font-size: 14px;"/>
@@ -42,7 +42,7 @@
     <center>
         <VBox spacing="15" style="-fx-background-color: #1e1e1e; -fx-padding: 20;">
 
-            <Label text="大模型参数设置"
+            <Label text="LLM Params"
                    style="-fx-text-fill: #ffffff; -fx-font-size: 18px; -fx-font-weight: bold;"/>
 
             <GridPane hgap="15" vgap="12" style="-fx-background-color: #252526; -fx-padding: 15;">
@@ -71,9 +71,9 @@
 
             <!-- 按钮区域 -->
             <HBox alignment="CENTER_RIGHT" spacing="10">
-                <Button text="取消" fx:id="cancelButton"
+                <Button text="Cancel" fx:id="cancelButton"
                         style="-fx-background-color: #3c3c3c; -fx-text-fill: white; -fx-pref-width: 80;"/>
-                <Button text="确定" fx:id="saveButton"
+                <Button text="Save" fx:id="saveButton"
                         style="-fx-background-color: #007acc; -fx-text-fill: white; -fx-pref-width: 80;"/>
             </HBox>
         </VBox>

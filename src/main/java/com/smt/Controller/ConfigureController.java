@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class SettingsController implements Initializable {
+public class ConfigureController implements Initializable {
 
     private static String TAG = "SettingsController";
 
@@ -112,8 +112,6 @@ public class SettingsController implements Initializable {
 
         // 保存到 LLMManager（推荐通过单例或静态方式保存）
         CacheManager.saveConfig(apiKey,modelName,baseUrl);
-
-        Toast.makeText(stage, "大模型设置已保存！", 1500);
 
         stage.close();
     }

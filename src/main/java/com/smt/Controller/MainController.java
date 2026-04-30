@@ -443,11 +443,11 @@ public class MainController implements Initializable {
 
     private void sendMsg () {
         if (promptField.getText() == null || promptField.getText().isBlank() || promptField.getText().isEmpty()) {
-            Toast.makeText(stage, "输入框不能为空!", 1000);
+            Toast.makeText(stage, "The input box cannot be empty!", 5000);
             return;
         }
         if (llmManager.createModel() == null) {
-            Toast.makeText(stage, "未设置大模型参数!", 1000);
+            Toast.makeText(stage, "The large model parameters have not been set yet!", 5000);
             return;
         }
         initWebView();
@@ -698,9 +698,9 @@ public class MainController implements Initializable {
     //打开设置对话框
     private void openCfg()  {
         try {
-            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/SettingsView.fxml"));
+            FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/ConfigureView.fxml"));
             Parent root = loader.load();
-            SettingsController settingsController = loader.getController();
+            ConfigureController settingsController = loader.getController();
             Stage settingsStage = new Stage();
             Scene scene = new Scene(root, 480, 280);
             try {
@@ -710,7 +710,7 @@ public class MainController implements Initializable {
                 System.out.println("loading fail");
             }
             settingsStage.setScene(scene);
-            settingsController.setStage(settingsStage, new SettingsController.SettingEvent() {
+            settingsController.setStage(settingsStage, new ConfigureController.SettingEvent() {
                 @Override
                 public void CloseEvent() {
                     llmManager = new LLMManager(currentProjectPath);
