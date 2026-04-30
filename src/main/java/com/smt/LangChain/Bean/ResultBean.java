@@ -12,11 +12,11 @@ public class ResultBean {
         none
     }
 
-    @Description("文件更改后的完整内容")
+    @Description("更改或者新增的内容")
     public StringBuffer content;
 
 
-    @Description("需要更改的文件路径")
+    @Description("需要变动的文件路径")
     public String path;
 
     @Description("文件的更改类型")

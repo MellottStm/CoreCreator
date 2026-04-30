@@ -568,6 +568,16 @@ public class MainController implements Initializable {
 
 
     private void showDiff (List<ResultBean> resultBeanList) {
+        int count = 0;
+        for (ResultBean bean:resultBeanList) {
+            logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
+            if (bean.path.equals("none") && bean.operationType == ResultBean.OperationType.none) {
+                count ++;
+            }
+        }
+        if (count == resultBeanList.size()) {
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/DiffView.fxml"));
             Parent root = loader.load();
@@ -589,6 +599,9 @@ public class MainController implements Initializable {
             File file;
             for (ResultBean bean:resultBeanList) {
                 logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
+                if (bean.path.equals("none") && bean.operationType== ResultBean.OperationType.none) {
+                    continue;
+                }
                 if (bean.path == null || bean.path.isEmpty()) {
                     shouldShow = false;
                     break;
@@ -602,6 +615,8 @@ public class MainController implements Initializable {
                         if (file.exists()) {
                             String content = Files.readString(Paths.get(bean.path));
                             diffController.addDiffFile(bean.path,content, bean.content.toString());
+                        } else {
+                            shouldShow = false;
                         }
                         break;
                     case del:
@@ -609,6 +624,8 @@ public class MainController implements Initializable {
                         if (file.exists()) {
                             String content = Files.readString(Paths.get(bean.path));
                             diffController.addDiffFile(bean.path,content, "");
+                        }else {
+                            shouldShow = false;
                         }
                         break;
                 }
