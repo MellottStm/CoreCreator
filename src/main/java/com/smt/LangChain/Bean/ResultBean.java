@@ -12,7 +12,7 @@ public class ResultBean {
         none
     }
 
-    @Description("更改文件的完整内容")
+    @Description("文件更改后的完整内容")
     public StringBuffer content;
 
 
