@@ -50,6 +50,7 @@
                     <MenuItem fx:id="openFolderMenuItem" text="Open..." />
                     <MenuItem fx:id="openSettingMenuItem" text="Settings" />
                     <MenuItem fx:id="closeProjectMenuItem" text="Close Project" />
+                    <MenuItem fx:id="exitMenuItem" text="Exit" />
                 </Menu>
                 <!-- 你以后可以在这里继续添加其他菜单 -->
             </MenuBar>

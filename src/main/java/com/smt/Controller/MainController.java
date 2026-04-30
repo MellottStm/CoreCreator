@@ -55,6 +55,8 @@ public class MainController implements Initializable {
 
     @FXML private MenuItem closeProjectMenuItem;
 
+    @FXML private MenuItem exitMenuItem;
+
     @FXML private TreeView<File> fileTreeView;
 
     @FXML private TabPane editorContainer;
@@ -179,6 +181,7 @@ public class MainController implements Initializable {
         openFolderMenuItem.setOnAction(e -> openFolder());
         openSettingMenuItem.setOnAction(e-> openSetting());
         closeProjectMenuItem.setOnAction(e-> closeProject());
+        exitMenuItem.setOnAction(e->exit());
         //5. 自动保存文件
         saveTimer = new Timer();
         saveTimer.schedule(new TimerTask() {
@@ -208,6 +211,12 @@ public class MainController implements Initializable {
         initData();
     }
 
+
+    private void exit () {
+        if (stage != null) {
+            stage.close();
+        }
+    }
 
     private void closeProject () {
         if (projectStage != null) {
