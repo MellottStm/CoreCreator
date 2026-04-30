@@ -215,6 +215,9 @@ public class MainController implements Initializable {
 
 
     private void exit () {
+        if (projectStage != null) {
+            projectStage.close();
+        }
         if (stage != null) {
             stage.close();
         }
