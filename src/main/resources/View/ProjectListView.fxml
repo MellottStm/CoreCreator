@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<VBox spacing="10"
+      style="-fx-background-color: #2b2b2b; -fx-padding: 5;"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.smt.Controller.ProjectListController">
+    <VBox>
+        <!-- 自定义标题栏 -->
+        <HBox fx:id="titleBar" alignment="CENTER_LEFT" spacing="6" style="-fx-background-color: #252526;                          -fx-padding: 8 12 8 12;                          -fx-border-color: #3c3c3c;                          -fx-border-width: 0 0 1 0;">
+
+            <!-- 左侧：Logo + 窗口标题 -->
+            <HBox alignment="CENTER_LEFT" spacing="8" HBox.hgrow="ALWAYS">
+                <ImageView fx:id="logoImage" fitHeight="26" fitWidth="26" preserveRatio="true">
+                    <image>
+                        <Image url="@../Img/logo.png" />
+                    </image></ImageView>
+                <Label fx:id="windowTitle" style="-fx-text-fill: #ffffff;                                   -fx-font-weight: bold;                                   -fx-font-size: 14.5px;" text="CoreCreator" />
+            </HBox>
+
+            <!-- 右侧：窗口控制按钮 -->
+            <HBox alignment="CENTER_RIGHT" spacing="4">
+                <Button fx:id="minimizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="minimizeButton" stylesheets="@../CSS/theme.css" text="🗕" />
+
+                <Button fx:id="maximizeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="maximizeButton" stylesheets="@../CSS/theme.css" text="🗖" />
+
+                <Button fx:id="closeButton" style="-fx-background-color: transparent;                                    -fx-text-fill: #cccccc;                                    -fx-font-size: 17px;                                    -fx-cursor: hand;                                    -fx-min-width: 36;                                    -fx-min-height: 32;" styleClass="closeButton" stylesheets="@../CSS/theme.css" text="✕" />
+            </HBox>
+        </HBox>
+    </VBox>
+    <!-- 顶部：搜索 + 打开 -->
+    <HBox spacing="10"
+          alignment="CENTER">
+        <TextField fx:id="searchField"
+                   promptText="Search..."
+                   HBox.hgrow="ALWAYS"
+                   prefHeight="30"
+                   style="-fx-background-color: #3c3f41; -fx-text-fill: white;" />
+        <Button fx:id="openBtn"
+                text="Open..."
+                prefHeight="30"
+                style="-fx-background-color: #007acc; -fx-text-fill: white;" />
+    </HBox>
+    <!-- 项目列表 -->
+    <ListView fx:id="projectListView"
+              VBox.vgrow="ALWAYS"
+              styleClass="custom-list-view" stylesheets="@../CSS/theme.css"
+    />
+
+</VBox>
