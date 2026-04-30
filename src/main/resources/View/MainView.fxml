@@ -48,7 +48,8 @@
             <MenuBar style="-fx-background-color: #1e1e1e; -fx-border-color: #3c3c3c; -fx-border-width: 0 0 1 0;">
                 <Menu text="File">
                     <MenuItem fx:id="openFolderMenuItem" text="Open..." />
-                    <MenuItem fx:id="openSettingMenuItem" text="Settings..." />
+                    <MenuItem fx:id="openSettingMenuItem" text="Settings" />
+                    <MenuItem fx:id="closeProjectMenuItem" text="Close Project" />
                 </Menu>
                 <!-- 你以后可以在这里继续添加其他菜单 -->
             </MenuBar>

@@ -5,19 +5,31 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class ProjectListController implements Initializable {
+
+    private static String TAG = "ProjectListController";
+
+    public final static Logger logger = Logger.getLogger(TAG);
+
 
     @FXML private TextField searchField;
 
@@ -56,10 +68,9 @@ public class ProjectListController implements Initializable {
     private void openProject() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("选择项目");
-
         File dir = chooser.showDialog(stage);
-
         if (dir != null && dir.isDirectory()) {
+            openMain(dir.getAbsolutePath());
             if (!projectList.contains(dir)) {
                 projectList.add(dir);
             }
@@ -72,20 +83,49 @@ public class ProjectListController implements Initializable {
     private void openSelectedProject() {
         File selected = projectListView.getSelectionModel().getSelectedItem();
         if (selected != null) {
-            System.out.println("打开项目: " + selected.getAbsolutePath());
-
-            // 👉 这里你后面可以跳转 MainView
+            logger.info("打开项目: " + selected.getAbsolutePath());
+            openMain(selected.getAbsolutePath());
         }
     }
 
+
+
+    private void openMain (String path) {
+        try {
+            FXMLLoader loader = new FXMLLoader(ProjectListController.class.getResource("/View/MainView.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1600, 900);
+            MainController mainController = loader.getController();
+            Stage mainStage = new Stage();
+            try {
+                Image icon = new Image(Objects.requireNonNull(ProjectListController.class.getResourceAsStream("/Img/logo.png")));
+                mainStage.getIcons().add(icon);
+            } catch (Exception e) {
+                System.out.println("loading fail");
+            }
+            mainStage.initStyle(StageStyle.UNDECORATED);
+            mainStage.setTitle("CoreCreator");
+            mainStage.setScene(scene);
+            mainStage.show();
+            mainController.setStage(mainStage,stage);
+            mainController.openProject(path);
+            stage.hide();
+        } catch (Exception e) {
+            logger.info("打开Main异常:" + e);
+        }
+    }
+
+
+
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // 模拟初始数据（你可以替换为缓存）
-        projectList.addAll(
-                new File("F:/TestProject1"),
-                new File("F:/DemoApp"),
-                new File("F:/MyWorkspace/HelloWorld")
-        );
+//        // 模拟初始数据（你可以替换为缓存）
+//        projectList.addAll(
+//                new File("F:/TestProject1"),
+//                new File("F:/DemoApp"),
+//                new File("F:/MyWorkspace/HelloWorld")
+//        );
 
         // 过滤器
         filteredList = new FilteredList<>(projectList, p -> true);

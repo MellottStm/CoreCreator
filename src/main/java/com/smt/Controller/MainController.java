@@ -53,6 +53,8 @@ public class MainController implements Initializable {
 
     @FXML private MenuItem openSettingMenuItem;
 
+    @FXML private MenuItem closeProjectMenuItem;
+
     @FXML private TreeView<File> fileTreeView;
 
     @FXML private TabPane editorContainer;
@@ -94,6 +96,8 @@ public class MainController implements Initializable {
 
     private Stage stage;
 
+    private Stage projectStage;
+
     private LLMManager llmManager;
 
     private List<ChatMessage> chatMessageList = new ArrayList<>();
@@ -107,8 +111,9 @@ public class MainController implements Initializable {
     // 新增：用于存储展开状态的路径集合
     private Set<String> expandedPaths = new HashSet<>();
 
-    public void setStage (Stage stage) {
+    public void setStage (Stage stage,Stage projectStage) {
         this.stage= stage;
+        this.projectStage = projectStage;
         EditorManager.makeResizable(stage,5,800,600);
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -173,6 +178,7 @@ public class MainController implements Initializable {
         // 4. 菜单 - 打开文件夹
         openFolderMenuItem.setOnAction(e -> openFolder());
         openSettingMenuItem.setOnAction(e-> openSetting());
+        closeProjectMenuItem.setOnAction(e-> closeProject());
         //5. 自动保存文件
         saveTimer = new Timer();
         saveTimer.schedule(new TimerTask() {
@@ -201,6 +207,17 @@ public class MainController implements Initializable {
         setupWindowButtons();
         initData();
     }
+
+
+    private void closeProject () {
+        if (projectStage != null) {
+            projectStage.show();
+        }
+        if (stage != null) {
+            stage.close();
+        }
+    }
+
 
     public void handleCreateFile(File dir) {
         inputDialog("Create file", name -> {
@@ -321,9 +338,17 @@ public class MainController implements Initializable {
                 }
             }
         }
-
-
     }
+
+    public void openProject (String path) {
+        CacheManager.saveProjectPath(path);
+        buildFileTree(new File(path));
+        llmManager = new LLMManager(path);
+        currentProjectPath = path;
+        startFileWatcher(new File(path));
+    }
+
+
 
     private void startFileWatcher(File rootDir) {
         if (fileWatchTimer != null) {
