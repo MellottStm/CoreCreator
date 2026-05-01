@@ -18,9 +18,9 @@ public class TestLLM {
     public static List<ChatMessage> chatMessageList = new ArrayList<>();
 
     public static void main(String[] args) {
-       LLMManager llmManager = new LLMManager("C:\\Users\\smt\\IdeaProjects\\TestProject");
+       LLMManager llmManager = new LLMManager("C:\\小说");
        logger.info(ToolsPrompt.chatPrompt);
-       chatMessageList.add(UserMessage.from("帮我写一个okhttp的post请求，以及帮我添加相关依赖"));
+       chatMessageList.add(UserMessage.from("帮我续写第二章"));
        llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
            @Override
            public void streamResult(String result) {

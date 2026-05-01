@@ -589,13 +589,6 @@ public class MainController implements Initializable {
             for (ContentBean bean:resultBeanList) {
                 logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
                 String content = "";
-                if (EditorManager.isDocx(new File(bean.path))) {
-                    content = EditorManager.readDocx(new File(bean.path));
-                } else if (EditorManager.isPdf(new File(bean.path))) {
-                    content = EditorManager.readPdf(new File(bean.path));
-                } else {
-                    content = Files.readString(Paths.get(bean.path));
-                }
                 switch (bean.operationType) {
                     case add:
                         diffController.addDiffFile(bean.path,"",bean.content.toString());
@@ -603,12 +596,26 @@ public class MainController implements Initializable {
                     case update:
                         file = new File(bean.path);
                         if (file.exists()) {
+                            if (EditorManager.isDocx(new File(bean.path))) {
+                                content = EditorManager.readDocx(new File(bean.path));
+                            } else if (EditorManager.isPdf(new File(bean.path))) {
+                                content = EditorManager.readPdf(new File(bean.path));
+                            } else {
+                                content = Files.readString(Paths.get(bean.path));
+                            }
                             diffController.addDiffFile(bean.path,content, bean.content.toString());
                         }
                         break;
                     case del:
                         file = new File(bean.path);
                         if (file.exists()) {
+                            if (EditorManager.isDocx(new File(bean.path))) {
+                                content = EditorManager.readDocx(new File(bean.path));
+                            } else if (EditorManager.isPdf(new File(bean.path))) {
+                                content = EditorManager.readPdf(new File(bean.path));
+                            } else {
+                                content = Files.readString(Paths.get(bean.path));
+                            }
                             diffController.addDiffFile(bean.path,content, "");
                         }
                         break;

@@ -143,14 +143,15 @@ public class LLMManager {
                             @Override
                             public void accept(Throwable throwable) {
                                 callBack.finalResult(content.toString());
+                                completableFuture.complete(list);
                             }
                         }).onCompleteResponse(new Consumer<ChatResponse>() {
                             @Override
                             public void accept(ChatResponse chatResponse) {
                                 callBack.finalResult(content.toString());
+                                completableFuture.complete(list);
                             }
                         }).start();
-                completableFuture.complete(list);
             } else {
                 completableFuture.complete(null);
             }
