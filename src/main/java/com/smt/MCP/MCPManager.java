@@ -1,9 +1,8 @@
 package com.smt.MCP;
 
 import com.smt.Editor.EditorManager;
-import com.smt.LangChain.Bean.ContentBean;
+import com.smt.LangChain.ToolsPrompt;
 import org.apache.log4j.Logger;
-
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,7 +16,7 @@ public class MCPManager {
 
 
 
-    public static void managerProject (String path, String content, ContentBean.OperationType type) {
+    public static void managerProject (String path, String content, ToolsPrompt.OperationType type) {
         switch (type) {
             case add:
             case update:

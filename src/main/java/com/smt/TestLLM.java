@@ -28,9 +28,8 @@ public class TestLLM {
            @Override
            public void finalResult(String result) {
                logger.info("完整的回答:" + result);
-
            }
-       }).thenAcceptAsync(result -> {
+       }).whenComplete((result,e) -> {
            for (ContentBean bean:result) {
                logger.info("文件:" + bean.path + ",内容:" + bean.content+ ",类型:" + bean.operationType);
            }

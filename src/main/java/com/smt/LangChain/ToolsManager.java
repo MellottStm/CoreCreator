@@ -1,5 +1,6 @@
 package com.smt.LangChain;
 
+import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.Bean.ToolFileBean;
 import dev.langchain4j.agent.tool.ReturnBehavior;
 import dev.langchain4j.agent.tool.Tool;
@@ -21,6 +22,15 @@ public class ToolsManager {
         @Tool(value = ToolsPrompt.fileManagePrompt)
         public ToolFileBean getFileType(ToolFileBean toolFileBeans){
             return toolFileBeans;
+        }
+
+    }
+
+    static class contentManageTool{
+
+        @Tool(value = ToolsPrompt.fileContentPrompt)
+        public ContentBean getFileContent(ContentBean contentBean){
+            return contentBean;
         }
 
     }

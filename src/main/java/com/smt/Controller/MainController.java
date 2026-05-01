@@ -8,6 +8,7 @@ import com.smt.Editor.EditorManager;
 import com.smt.Editor.FileManager;
 import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.LLMManager;
+import com.smt.LangChain.ToolsPrompt;
 import com.smt.MCP.MCPManager;
 import com.smt.Main;
 import com.smt.Thread.ThreadManager;
@@ -43,7 +44,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static com.smt.LangChain.Bean.ContentBean.OperationType.del;
 
 public class MainController implements Initializable {
 
@@ -571,7 +571,7 @@ public class MainController implements Initializable {
         int count = 0;
         for (ContentBean bean:resultBeanList) {
             logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
-            if (bean.path.equals("none") && bean.operationType == ContentBean.OperationType.none) {
+            if (bean.path.equals("none") && bean.operationType == ToolsPrompt.OperationType.none) {
                 count ++;
             }
         }
@@ -599,7 +599,7 @@ public class MainController implements Initializable {
             File file;
             for (ContentBean bean:resultBeanList) {
                 logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
-                if (bean.path.equals("none") && bean.operationType== ContentBean.OperationType.none) {
+                if (bean.path.equals("none") && bean.operationType== ToolsPrompt.OperationType.none) {
                     continue;
                 }
                 if (bean.path.isEmpty()) {

@@ -19,6 +19,13 @@ public class ToolsPrompt {
         work
     }
 
+    public enum OperationType {
+        add,
+        del,
+        update,
+        none
+    }
+
 
     public final static String intentClassificationPrompt = "功能描述:你是一个用户意图分类工具\n" +
             "#核心任务：\n" +
@@ -47,7 +54,19 @@ public class ToolsPrompt {
             "1、你更改的文件必须在用户当前路径下，不能超出当前的路径\n" +
             "2、更改文件类型必须只能输出add、del、update，其中add表示新增文件，del表示删除文件，update表示更改文件\n";
 
-    public final static String fileContentPrompt = "";
+    public final static String fileContentPrompt = "功能描述:你是一个基于用户提供的信息和用户的请求以及提供的文件路径和文件更改类型这些信息输出指定内容的AI助手\n" +
+            "#核心任务\n" +
+            "1、你需要基于用户提供的信息知道用户当前路径下的所有文件和文件内容，你需要参考这些文件内容。\n" +
+            "2、你需要基于用户当前路径的所有文件和文件内容分析用户的请求\n" +
+            "3、你需要基于提供的文件路径和文件更改类型进行输出，输出的规则如下：\n" +
+            "1、如果文件的更改类型是del，则输出的内容是空的\n" +
+            "2、如果文件的更改类型是update和add，则你需要参考用户提供的信息和用户的请求输出文件中完整的内容。\n" +
+            "#相关限制\n" +
+            "1、你更改文件必须在用户当前路径下，不能超出当前的路径。\n" +
+            "2、输出的内容必须要和文件的路径和文件的更改类型进行匹配";
+
+
+    public final static String aiAssistantPrompt = "";
 
 
     public static String getFilePathAndContentPrompt(String dir) {

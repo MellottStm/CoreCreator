@@ -25,8 +25,6 @@ public class LLMManager {
 
     private String dirPath;
 
-    private List<ChatMessage> chatMessageList = new ArrayList<>();
-
     // 单例模式或静态工厂方法
     public OpenAiChatModel createModel() {
         if (Configure.LLM_NAME != null && Configure.LLM_URL != null && Configure.API_KEY != null) {
@@ -56,6 +54,8 @@ public class LLMManager {
 
     private ToolsAssistant fileManageAssistant;
 
+    private ToolsAssistant contentManageAssistant;
+
     public LLMManager (String dirPath) {
         if (createModel() == null || createStreamModel() == null) {
             return;
@@ -75,6 +75,11 @@ public class LLMManager {
                 .tools(new ToolsManager.fileManageTool())
                 .streamingChatModel(createStreamModel())
                 .build();
+        contentManageAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .tools(new ToolsManager.contentManageTool())
+                .streamingChatModel(createStreamModel())
+                .build();
     }
 
 
@@ -92,14 +97,31 @@ public class LLMManager {
         ToolsPrompt.intentClass intentClass = classification(chatMessageList).content();
         if (intentClass == ToolsPrompt.intentClass.work) {
             logger.info("这是work意图!");
-            this.chatMessageList.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
-            this.chatMessageList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
-            this.chatMessageList.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
-            List<ToolFileBean> beans = fileManageAssistant.fileManage(this.chatMessageList).list;
+            List<ChatMessage> chatMessages = new ArrayList<>();
+            chatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
+            chatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+            chatMessages.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+            List<ToolFileBean> beans = fileManageAssistant.fileManage(chatMessages).list;
+            StringBuffer paths = new StringBuffer();
+            paths.append("当前意图需要更改的文件:");
             for (ToolFileBean bean:beans) {
-                logger.info("当前意图需要更改的文件:" + bean.path + ",文件更改的类型：" + bean.operationType);
+                paths.append(bean.path).append(",文件更改的类型：").append(bean.operationType).append("\n");
             }
-
+            logger.info(paths);
+            if (!beans.isEmpty()) {
+                List<ChatMessage> contentChatMessages = new ArrayList<>();
+                contentChatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
+                contentChatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+                contentChatMessages.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+                contentChatMessages.add(SystemMessage.from(paths.toString()));
+                List<ContentBean> list = contentManageAssistant.fileContent(contentChatMessages).list;
+                for (ContentBean bean:list) {
+                    logger.info("更改的文件内容为:" + bean.content);
+                }
+                completableFuture.complete(list);
+            } else {
+                completableFuture.complete(null);
+            }
         } else {
             logger.info("这是chat意图!");
             chatAssistant.chatStream(chatMessageList).onPartialResponse(new Consumer<String>() {
