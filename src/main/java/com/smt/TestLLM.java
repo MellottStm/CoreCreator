@@ -1,11 +1,9 @@
 package com.smt;
 
-import com.smt.LangChain.Bean.ResultBean;
+import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.LLMManager;
-import com.smt.LangChain.ToolsPrompt;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
-import dev.langchain4j.model.openai.internal.chat.Tool;
 import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +18,7 @@ public class TestLLM {
 
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("C:\\Users\\smt\\IdeaProjects\\TestProject");
-       chatMessageList.add(UserMessage.from("你爸爸是谁？"));
+       chatMessageList.add(UserMessage.from("帮我写一个okhttp的post请求，以及帮我添加相关依赖"));
        llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
            @Override
            public void streamResult(String result) {
@@ -31,6 +29,10 @@ public class TestLLM {
            public void finalResult(String result) {
                logger.info("完整的回答:" + result);
 
+           }
+       }).thenAcceptAsync(result -> {
+           for (ContentBean bean:result) {
+               logger.info("文件:" + bean.path + ",内容:" + bean.content+ ",类型:" + bean.operationType);
            }
        });
 

@@ -1,5 +1,7 @@
 package com.smt.LangChain;
 
+import com.smt.LangChain.Bean.ToolFileBean;
+import com.smt.LangChain.Bean.ToolFileResultBean;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
@@ -14,6 +16,7 @@ public interface ToolsAssistant {
 
     Result<intentClass> intentClassification (List<ChatMessage> messages);
 
+    ToolFileResultBean fileManage(List<ChatMessage> messages);
 
     @SystemMessage(value = chatPrompt)
     TokenStream chatStream (List<ChatMessage> messages);

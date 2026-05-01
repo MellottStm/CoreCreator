@@ -4,10 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.smt.Cache.CacheManager;
 import com.smt.Cache.Configure;
 import com.smt.Editor.ChatRenderer;
-import com.smt.Editor.EditorAdapter;
 import com.smt.Editor.EditorManager;
 import com.smt.Editor.FileManager;
-import com.smt.LangChain.Bean.ResultBean;
+import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.LLMManager;
 import com.smt.MCP.MCPManager;
 import com.smt.Main;
@@ -19,7 +18,6 @@ import eu.mihosoft.monacofx.MonacoFX;
 import javafx.application.Platform;
 import javafx.concurrent.Worker;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -44,6 +42,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
+
+import static com.smt.LangChain.Bean.ContentBean.OperationType.del;
 
 public class MainController implements Initializable {
 
@@ -567,11 +567,11 @@ public class MainController implements Initializable {
     }
 
 
-    private void showDiff (List<ResultBean> resultBeanList) {
+    private void showDiff (List<ContentBean> resultBeanList) {
         int count = 0;
-        for (ResultBean bean:resultBeanList) {
+        for (ContentBean bean:resultBeanList) {
             logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
-            if (bean.path.equals("none") && bean.operationType == ResultBean.OperationType.none) {
+            if (bean.path.equals("none") && bean.operationType == ContentBean.OperationType.none) {
                 count ++;
             }
         }
@@ -597,9 +597,9 @@ public class MainController implements Initializable {
             diffStage.show();
             boolean shouldShow = true;
             File file;
-            for (ResultBean bean:resultBeanList) {
+            for (ContentBean bean:resultBeanList) {
                 logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
-                if (bean.path.equals("none") && bean.operationType== ResultBean.OperationType.none) {
+                if (bean.path.equals("none") && bean.operationType== ContentBean.OperationType.none) {
                     continue;
                 }
                 if (bean.path.isEmpty()) {
@@ -636,7 +636,7 @@ public class MainController implements Initializable {
             diffController.setEvent(new DiffController.Event() {
                 @Override
                 public void applyEvent() {
-                    for (ResultBean resultBean : resultBeanList) {
+                    for (ContentBean resultBean : resultBeanList) {
                         MCPManager.managerProject(resultBean.path, resultBean.content.toString(), resultBean.operationType);
                     }
                     diffStage.close();

@@ -1,7 +1,7 @@
 package com.smt.MCP;
 
 import com.smt.Editor.EditorManager;
-import com.smt.LangChain.Bean.ResultBean;
+import com.smt.LangChain.Bean.ContentBean;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -17,7 +17,7 @@ public class MCPManager {
 
 
 
-    public static void managerProject (String path, String content, ResultBean.OperationType type) {
+    public static void managerProject (String path, String content, ContentBean.OperationType type) {
         switch (type) {
             case add:
             case update:

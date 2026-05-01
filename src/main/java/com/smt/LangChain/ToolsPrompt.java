@@ -37,7 +37,17 @@ public class ToolsPrompt {
             "3、不能输出任何形式的代码\n" +
             "4、不能输出负面消极的内容，例如色情，暴力，犯罪等。";
 
-    public final static String classificationChangeFilePrompt = "";
+
+    public final static String fileManagePrompt = "功能描述：你是一个基于用户提供的信息和用户请求输出需要更改的文件和更改类型的AI助手。\n" +
+            "#核心任务\n" +
+            "1、你需要基于用户提供的信息知道用户当前路径下的所有文件和文件内容。\n" +
+            "2、你需要基于用户当前路径的所有文件和文件内容分析用户的请求，输出需要更改文件的完整文件路径\n" +
+            "3、你需要输出更改文件的更改类型，类型包括新增文件、删除文件、更改文件\n" +
+            "#相关限制\n" +
+            "1、你更改的文件必须在用户当前路径下，不能超出当前的路径\n" +
+            "2、更改文件类型必须只能输出add、del、update，其中add表示新增文件，del表示删除文件，update表示更改文件\n";
+
+    public final static String fileContentPrompt = "";
 
 
     public static String getFilePathAndContentPrompt(String dir) {

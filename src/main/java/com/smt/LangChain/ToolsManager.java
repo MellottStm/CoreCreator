@@ -1,7 +1,10 @@
 package com.smt.LangChain;
 
+import com.smt.LangChain.Bean.ToolFileBean;
 import dev.langchain4j.agent.tool.ReturnBehavior;
 import dev.langchain4j.agent.tool.Tool;
+
+import java.util.List;
 
 public class ToolsManager {
 
@@ -12,6 +15,20 @@ public class ToolsManager {
         }
 
     }
+
+    static class fileManageTool{
+
+        @Tool(value = ToolsPrompt.fileManagePrompt)
+        public ToolFileBean getFileType(ToolFileBean toolFileBeans){
+            return toolFileBeans;
+        }
+
+    }
+
+
+
+
+
 
 
 }

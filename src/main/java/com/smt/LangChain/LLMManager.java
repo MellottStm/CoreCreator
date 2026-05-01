@@ -1,15 +1,16 @@
 package com.smt.LangChain;
 
 import com.smt.Cache.Configure;
-import com.smt.LangChain.Bean.ResultBean;
+import com.smt.LangChain.Bean.ContentBean;
+import com.smt.LangChain.Bean.ToolFileBean;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.Result;
-import dev.langchain4j.service.TokenStream;
 import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +54,8 @@ public class LLMManager {
 
     private ToolsAssistant chatAssistant;
 
+    private ToolsAssistant fileManageAssistant;
+
     public LLMManager (String dirPath) {
         if (createModel() == null || createStreamModel() == null) {
             return;
@@ -67,6 +70,11 @@ public class LLMManager {
                 .chatModel(createModel())
                 .streamingChatModel(createStreamModel())
                 .build();
+        fileManageAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .tools(new ToolsManager.fileManageTool())
+                .streamingChatModel(createStreamModel())
+                .build();
     }
 
 
@@ -76,12 +84,22 @@ public class LLMManager {
     }
 
 
-    public CompletableFuture<List<ResultBean>> requestLLMStream (List<ChatMessage> chatMessageList,RequestCallBack callBack) {
-        CompletableFuture<List<ResultBean>> completableFuture = new CompletableFuture<>();
+
+
+    public CompletableFuture<List<ContentBean>> requestLLMStream (List<ChatMessage> chatMessageList, RequestCallBack callBack) {
+        CompletableFuture<List<ContentBean>> completableFuture = new CompletableFuture<>();
         StringBuffer content = new StringBuffer();
         ToolsPrompt.intentClass intentClass = classification(chatMessageList).content();
         if (intentClass == ToolsPrompt.intentClass.work) {
             logger.info("这是work意图!");
+            this.chatMessageList.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
+            this.chatMessageList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+            this.chatMessageList.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+            List<ToolFileBean> beans = fileManageAssistant.fileManage(this.chatMessageList).list;
+            for (ToolFileBean bean:beans) {
+                logger.info("当前意图需要更改的文件:" + bean.path + ",文件更改的类型：" + bean.operationType);
+            }
+
         } else {
             logger.info("这是chat意图!");
             chatAssistant.chatStream(chatMessageList).onPartialResponse(new Consumer<String>() {
