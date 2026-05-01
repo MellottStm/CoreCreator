@@ -1,8 +1,6 @@
 package com.smt.LangChain;
 
-import com.smt.LangChain.Bean.ResultBean;
 import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.TokenStream;
@@ -13,16 +11,15 @@ import static com.smt.LangChain.ToolsPrompt.*;
 
 public interface ToolsAssistant {
 
-    @SystemMessage(value = intentClassificationPrompt)
-    ToolsPrompt.intentClass intentClassification (List<ChatMessage> messages);
+    Result<intentClass> intentClassification (List<ChatMessage> messages);
 
-    @SystemMessage(value = toolAgentPrompt)
+    @SystemMessage(value = classificationChangeFilePrompt)
     String requestLLMForWork (List<ChatMessage> messages);
 
     @SystemMessage(value = chatPrompt)
     String chat(List<ChatMessage> messages);
 
-    @SystemMessage(value = toolAgentPrompt)
+    @SystemMessage(value = classificationChangeFilePrompt)
     TokenStream requestLLMForWorkStream (List<ChatMessage> messages);
 
     @SystemMessage(value = chatPrompt)
