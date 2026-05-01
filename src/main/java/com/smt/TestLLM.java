@@ -2,6 +2,7 @@ package com.smt;
 
 import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.LLMManager;
+import com.smt.LangChain.ToolsPrompt;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.apache.log4j.Logger;
@@ -18,6 +19,7 @@ public class TestLLM {
 
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("C:\\Users\\smt\\IdeaProjects\\TestProject");
+       logger.info(ToolsPrompt.chatPrompt);
        chatMessageList.add(UserMessage.from("帮我写一个okhttp的post请求，以及帮我添加相关依赖"));
        llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
            @Override

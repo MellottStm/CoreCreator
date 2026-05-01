@@ -56,6 +56,8 @@ public class LLMManager {
 
     private ToolsAssistant contentManageAssistant;
 
+    private ToolsAssistant summeryAssistant;
+
     public LLMManager (String dirPath) {
         if (createModel() == null || createStreamModel() == null) {
             return;
@@ -80,6 +82,10 @@ public class LLMManager {
                 .tools(new ToolsManager.contentManageTool())
                 .streamingChatModel(createStreamModel())
                 .build();
+        summeryAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .streamingChatModel(createStreamModel())
+                .build();
     }
 
 
@@ -97,27 +103,53 @@ public class LLMManager {
         ToolsPrompt.intentClass intentClass = classification(chatMessageList).content();
         if (intentClass == ToolsPrompt.intentClass.work) {
             logger.info("这是work意图!");
+            callBack.streamResult("检测到用户的意图为任务意图!");
             List<ChatMessage> chatMessages = new ArrayList<>();
             chatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
             chatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
             chatMessages.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
             List<ToolFileBean> beans = fileManageAssistant.fileManage(chatMessages).list;
             StringBuffer paths = new StringBuffer();
-            paths.append("当前意图需要更改的文件:");
+            paths.append("当前意图需要更改的文件:\n");
             for (ToolFileBean bean:beans) {
+                callBack.streamResult("用户意图需要更改的文件:" + bean.path);
                 paths.append(bean.path).append(",文件更改的类型：").append(bean.operationType).append("\n");
             }
             logger.info(paths);
             if (!beans.isEmpty()) {
+                callBack.streamResult("正在输出内容...");
                 List<ChatMessage> contentChatMessages = new ArrayList<>();
                 contentChatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
                 contentChatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
                 contentChatMessages.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
                 contentChatMessages.add(SystemMessage.from(paths.toString()));
                 List<ContentBean> list = contentManageAssistant.fileContent(contentChatMessages).list;
+                StringBuilder finalResult = new StringBuilder();
                 for (ContentBean bean:list) {
-                    logger.info("更改的文件内容为:" + bean.content);
+                    finalResult.append("用户更改的文件:").append(bean.path).append(",更改的内容为:").append(bean.content).append(",更改的类型是:").append(bean.operationType);
                 }
+                List<ChatMessage> summeryList = new ArrayList<>();
+                summeryList.add(SystemMessage.from("用户的最终输出内容:" + finalResult));
+                summeryList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+                summeryList.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+                summeryAssistant.summeryStream(summeryList)
+                        .onPartialResponse(new Consumer<String>() {
+                            @Override
+                            public void accept(String s) {
+                                content.append(s);
+                                callBack.streamResult(content.toString());
+                            }
+                        }).onError(new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) {
+                                callBack.finalResult(content.toString());
+                            }
+                        }).onCompleteResponse(new Consumer<ChatResponse>() {
+                            @Override
+                            public void accept(ChatResponse chatResponse) {
+                                callBack.finalResult(content.toString());
+                            }
+                        }).start();
                 completableFuture.complete(list);
             } else {
                 completableFuture.complete(null);

@@ -21,6 +21,9 @@ public interface ToolsAssistant {
 
     LLMMCPResultBean fileContent(List<ChatMessage> messages);
 
+    @SystemMessage(value = summeryAssistantPrompt)
+    TokenStream summeryStream (List<ChatMessage> messages);
+
     @SystemMessage(value = chatPrompt)
     TokenStream chatStream (List<ChatMessage> messages);
 

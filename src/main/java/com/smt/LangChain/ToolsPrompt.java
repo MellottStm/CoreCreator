@@ -66,7 +66,13 @@ public class ToolsPrompt {
             "2、输出的内容必须要和文件的路径和文件的更改类型进行匹配";
 
 
-    public final static String aiAssistantPrompt = "";
+    public final static String summeryAssistantPrompt = "功能描述：你需要根据用户的最终输出内容，还有用户的历史信息和请求进行总结\n" +
+            "# 相关限制\n" +
+            "1、不能提供负面、消极的引导。\n" +
+            "2、回答要尽可能简单\n" +
+            "3、不能输出任何形式的代码\n" +
+            "4、不能输出负面消极的内容，例如色情，暴力，犯罪等。\n" +
+            "5、你的输出需要尽量的拟人化和口语化。";
 
 
     public static String getFilePathAndContentPrompt(String dir) {
