@@ -568,16 +568,6 @@ public class MainController implements Initializable {
 
 
     private void showDiff (List<ContentBean> resultBeanList) {
-        int count = 0;
-        for (ContentBean bean:resultBeanList) {
-            logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
-            if (bean.path.equals("none") && bean.operationType == ToolsPrompt.OperationType.none) {
-                count ++;
-            }
-        }
-        if (count == resultBeanList.size()) {
-            return;
-        }
         try {
             FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/DiffView.fxml"));
             Parent root = loader.load();
@@ -595,16 +585,16 @@ public class MainController implements Initializable {
             diffStage.initStyle(StageStyle.UNDECORATED);
             diffStage.setTitle("CoreCreator");
             diffStage.show();
-            boolean shouldShow = true;
             File file;
             for (ContentBean bean:resultBeanList) {
                 logger.info("输出的路径:" + bean.path + ",输出的内容:" + bean.content + ",更改的类型:" + bean.operationType);
-                if (bean.path.equals("none") && bean.operationType== ToolsPrompt.OperationType.none) {
-                    continue;
-                }
-                if (bean.path.isEmpty()) {
-                    shouldShow = false;
-                    break;
+                String content = "";
+                if (EditorManager.isDocx(new File(bean.path))) {
+                    content = EditorManager.readDocx(new File(bean.path));
+                } else if (EditorManager.isPdf(new File(bean.path))) {
+                    content = EditorManager.readPdf(new File(bean.path));
+                } else {
+                    content = Files.readString(Paths.get(bean.path));
                 }
                 switch (bean.operationType) {
                     case add:
@@ -613,26 +603,18 @@ public class MainController implements Initializable {
                     case update:
                         file = new File(bean.path);
                         if (file.exists()) {
-                            String content = Files.readString(Paths.get(bean.path));
                             diffController.addDiffFile(bean.path,content, bean.content.toString());
-                        } else {
-                            shouldShow = false;
                         }
                         break;
                     case del:
                         file = new File(bean.path);
                         if (file.exists()) {
-                            String content = Files.readString(Paths.get(bean.path));
                             diffController.addDiffFile(bean.path,content, "");
-                        }else {
-                            shouldShow = false;
                         }
                         break;
                 }
             }
-            if (shouldShow) {
-                diffStage.show();
-            }
+            diffStage.show();
             diffController.setEvent(new DiffController.Event() {
                 @Override
                 public void applyEvent() {

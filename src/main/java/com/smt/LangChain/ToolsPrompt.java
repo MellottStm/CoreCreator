@@ -22,8 +22,7 @@ public class ToolsPrompt {
     public enum OperationType {
         add,
         del,
-        update,
-        none
+        update
     }
 
 
