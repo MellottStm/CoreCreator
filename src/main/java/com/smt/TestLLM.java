@@ -20,8 +20,19 @@ public class TestLLM {
 
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("C:\\Users\\smt\\IdeaProjects\\TestProject");
-       chatMessageList.add(UserMessage.from("帮我写一个冒泡排序算法"));
-       logger.info(llmManager.classification(chatMessageList).content());
+       chatMessageList.add(UserMessage.from("你爸爸是谁？"));
+       llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
+           @Override
+           public void streamResult(String result) {
+               logger.info("流式输出:" + result);
+           }
+
+           @Override
+           public void finalResult(String result) {
+               logger.info("完整的回答:" + result);
+
+           }
+       });
 
 
     }

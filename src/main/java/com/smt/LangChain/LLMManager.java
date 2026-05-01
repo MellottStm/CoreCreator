@@ -4,6 +4,7 @@ import com.smt.Cache.Configure;
 import com.smt.LangChain.Bean.ResultBean;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
@@ -13,6 +14,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class LLMManager {
 
@@ -49,6 +51,8 @@ public class LLMManager {
 
     private ToolsAssistant intentAssistant;
 
+    private ToolsAssistant chatAssistant;
+
     public LLMManager (String dirPath) {
         if (createModel() == null || createStreamModel() == null) {
             return;
@@ -57,6 +61,10 @@ public class LLMManager {
         intentAssistant = AiServices.builder(ToolsAssistant.class)
                 .chatModel(createModel())
                 .tools(new ToolsManager.intentTool())
+                .streamingChatModel(createStreamModel())
+                .build();
+        chatAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
                 .streamingChatModel(createStreamModel())
                 .build();
     }
@@ -70,6 +78,32 @@ public class LLMManager {
 
     public CompletableFuture<List<ResultBean>> requestLLMStream (List<ChatMessage> chatMessageList,RequestCallBack callBack) {
         CompletableFuture<List<ResultBean>> completableFuture = new CompletableFuture<>();
+        StringBuffer content = new StringBuffer();
+        ToolsPrompt.intentClass intentClass = classification(chatMessageList).content();
+        if (intentClass == ToolsPrompt.intentClass.work) {
+            logger.info("这是work意图!");
+        } else {
+            logger.info("这是chat意图!");
+            chatAssistant.chatStream(chatMessageList).onPartialResponse(new Consumer<String>() {
+                @Override
+                public void accept(String s) {
+                    content.append(s);
+                    callBack.streamResult(content.toString());
+                }
+            }).onError(new Consumer<Throwable>() {
+                @Override
+                public void accept(Throwable throwable) {
+                    callBack.finalResult(content.toString());
+                    completableFuture.complete(null);
+                }
+            }).onCompleteResponse(new Consumer<ChatResponse>() {
+                @Override
+                public void accept(ChatResponse chatResponse) {
+                    callBack.finalResult(content.toString());
+                    completableFuture.complete(null);
+                }
+            }).start();
+        }
         completableFuture.join();
         return completableFuture;
     }
