@@ -3,6 +3,7 @@ package com.smt;
 import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.LLMManager;
 import com.smt.LangChain.ToolsPrompt;
+import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.UserMessage;
 import org.apache.log4j.Logger;
@@ -20,8 +21,8 @@ public class TestLLM {
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("C:\\小说");
        logger.info(ToolsPrompt.chatPrompt);
-       chatMessageList.add(UserMessage.from("帮我续写第二章"));
-       llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
+       String query = "帮我续写第二章";
+       llmManager.requestLLMStream(chatMessageList, query,new LLMManager.RequestCallBack() {
            @Override
            public void streamResult(String result) {
                logger.info("流式输出:" + result);
@@ -30,6 +31,8 @@ public class TestLLM {
            @Override
            public void finalResult(String result) {
                logger.info("完整的回答:" + result);
+               chatMessageList.add(UserMessage.from(query));
+               chatMessageList.add(AiMessage.from(result));
            }
        }).whenComplete((result,e) -> {
            for (ContentBean bean:result) {

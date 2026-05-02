@@ -97,7 +97,7 @@ public class LLMManager {
 
 
 
-    public CompletableFuture<List<ContentBean>> requestLLMStream (List<ChatMessage> chatMessageList, RequestCallBack callBack) {
+    public CompletableFuture<List<ContentBean>> requestLLMStream (List<ChatMessage> chatMessageList,String query, RequestCallBack callBack) {
         CompletableFuture<List<ContentBean>> completableFuture = new CompletableFuture<>();
         StringBuffer content = new StringBuffer();
         ToolsPrompt.intentClass intentClass = classification(chatMessageList).content();
@@ -107,7 +107,7 @@ public class LLMManager {
             List<ChatMessage> chatMessages = new ArrayList<>();
             chatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
             chatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
-            chatMessages.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+            chatMessages.add(SystemMessage.from("用户的当前请求:" + query));
             List<ToolFileBean> beans = fileManageAssistant.fileManage(chatMessages).list;
             StringBuffer paths = new StringBuffer();
             paths.append("当前意图需要更改的文件:\n");
@@ -131,7 +131,7 @@ public class LLMManager {
                 List<ChatMessage> summeryList = new ArrayList<>();
                 summeryList.add(SystemMessage.from("用户的最终输出内容:" + finalResult));
                 summeryList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
-                summeryList.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+                summeryList.add(SystemMessage.from("用户的当前请求:" + query));
                 summeryAssistant.summeryStream(summeryList)
                         .onPartialResponse(new Consumer<String>() {
                             @Override

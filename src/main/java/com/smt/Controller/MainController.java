@@ -459,7 +459,7 @@ public class MainController implements Initializable {
             return;
         }
         initWebView();
-        chatMessageList.add(UserMessage.from(promptField.getText()));
+        String query = promptField.getText();
         appendUserMessage(promptField.getText());
         promptField.clear();
         promptField.setPromptText("Waiting Ai response...");
@@ -469,7 +469,7 @@ public class MainController implements Initializable {
         ThreadManager.setThreadToPool(new Runnable() {
             @Override
             public void run() {
-                llmManager.requestLLMStream(chatMessageList, new LLMManager.RequestCallBack() {
+                llmManager.requestLLMStream(chatMessageList, query ,new LLMManager.RequestCallBack() {
                     @Override
                     public void streamResult(String result) {
                         logger.info("大模型流式返回的结果：" + result);
@@ -480,6 +480,7 @@ public class MainController implements Initializable {
                     public void finalResult(String result) {
                         logger.info("大模型流式返回的最终结果：" + result);
                         updateAiMessage(result);
+                        chatMessageList.add(UserMessage.from(query));
                         chatMessageList.add(AiMessage.from(result));
                         Platform.runLater(new Runnable() {
                             @Override
