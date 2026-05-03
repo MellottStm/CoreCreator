@@ -511,7 +511,6 @@ public class MainController implements Initializable {
                         });
                     }
                 });
-                requestLLMStreamFuture.join();
                 requestLLMStreamFuture.whenComplete((resultBeanList, throwable) -> {
                     if (resultBeanList != null) {
                         Platform.runLater(new Runnable() {

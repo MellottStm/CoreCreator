@@ -160,7 +160,10 @@ public class LLMManager {
             }
         } else {
             logger.info("这是chat意图!");
-            chatAssistant.chatStream(chatMessageList).onPartialResponse(new Consumer<String>() {
+            List<ChatMessage> chatList = new ArrayList<>();
+            chatList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+            chatList.add(SystemMessage.from("用户的当前请求:" + query));
+            chatAssistant.chatStream(chatList).onPartialResponse(new Consumer<String>() {
                 @Override
                 public void accept(String s) {
                     content.append(s);
