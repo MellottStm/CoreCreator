@@ -139,24 +139,30 @@ public class LLMManager {
                         .onPartialResponse(new Consumer<String>() {
                             @Override
                             public void accept(String s) {
-                                content.append(s);
-                                callBack.streamResult(content.toString());
+                                if (!completableFuture.isDone()) {
+                                    content.append(s);
+                                    callBack.streamResult(content.toString());
+                                }
                             }
                         }).onError(new Consumer<Throwable>() {
                             @Override
                             public void accept(Throwable throwable) {
-                                callBack.finalResult(content.toString());
-                                completableFuture.complete(list);
+                                if (!completableFuture.isDone()) {
+                                    callBack.finalResult(content.toString());
+                                    completableFuture.completeExceptionally(throwable);
+                                }
                             }
                         }).onCompleteResponse(new Consumer<ChatResponse>() {
                             @Override
                             public void accept(ChatResponse chatResponse) {
-                                callBack.finalResult(content.toString());
-                                completableFuture.complete(list);
+                                if (!completableFuture.isDone()) {
+                                    callBack.finalResult(content.toString());
+                                    completableFuture.complete(list);
+                                }
                             }
                         }).start();
             } else {
-                completableFuture.complete(null);
+                completableFuture.completeExceptionally(new Exception("没有更改文件!"));
             }
         } else {
             logger.info("这是chat意图!");
@@ -166,24 +172,29 @@ public class LLMManager {
             chatAssistant.chatStream(chatList).onPartialResponse(new Consumer<String>() {
                 @Override
                 public void accept(String s) {
-                    content.append(s);
-                    callBack.streamResult(content.toString());
+                    if (!completableFuture.isDone()) {
+                        content.append(s);
+                        callBack.streamResult(content.toString());
+                    }
                 }
             }).onError(new Consumer<Throwable>() {
                 @Override
                 public void accept(Throwable throwable) {
-                    callBack.finalResult(content.toString());
-                    completableFuture.complete(null);
+                    if (!completableFuture.isDone()) {
+                        callBack.finalResult(content.toString());
+                        completableFuture.completeExceptionally(throwable);
+                    }
                 }
             }).onCompleteResponse(new Consumer<ChatResponse>() {
                 @Override
                 public void accept(ChatResponse chatResponse) {
-                    callBack.finalResult(content.toString());
-                    completableFuture.complete(null);
+                    if (!completableFuture.isDone()) {
+                        callBack.finalResult(content.toString());
+                        completableFuture.completeExceptionally(new Exception("已经完成输出!"));
+                    }
                 }
             }).start();
         }
-        completableFuture.join();
         return completableFuture;
     }
 

@@ -463,7 +463,7 @@ public class MainController implements Initializable {
         sendButton.setText("➤");
         if (requestLLMStreamFuture != null) {
             if (!requestLLMStreamFuture.isDone()) {
-                requestLLMStreamFuture.complete(null);
+                requestLLMStreamFuture.completeExceptionally(new Exception("用户中断输出!"));
             }
         }
         updateAiMessage("已中断请求!");
