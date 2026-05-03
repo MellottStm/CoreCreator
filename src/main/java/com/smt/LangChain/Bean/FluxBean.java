@@ -10,4 +10,6 @@ public class FluxBean {
 
     public boolean isEnd;
 
+    public long token;
+
 }

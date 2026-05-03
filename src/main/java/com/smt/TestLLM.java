@@ -1,12 +1,9 @@
 package com.smt;
 
 import com.smt.LangChain.Bean.ContentBean;
-import com.smt.LangChain.Bean.LLMMCPResultBean;
 import com.smt.LangChain.LLMManager;
 import com.smt.LangChain.ToolsPrompt;
-import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.ChatMessage;
-import dev.langchain4j.data.message.UserMessage;
 import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +22,10 @@ public class TestLLM {
        LLMManager llmManager = new LLMManager("C:\\小说");
        logger.info(ToolsPrompt.chatPrompt);
        String query = "你爸爸是谁？";
-
-       llmManager.asyncLangChain(chatMessageList, query, new LLMManager.FluxCallBack() {
+       long token = System.currentTimeMillis();
+       llmManager.asyncLangChain(chatMessageList, query,token ,new LLMManager.FluxCallBack() {
            @Override
-           public CompletableFuture<Void> llmStream(String result) {
+           public CompletableFuture<Void> llmStream(String result,long token) {
                return CompletableFuture.runAsync(new Runnable() {
                    @Override
                    public void run() {
@@ -38,17 +35,17 @@ public class TestLLM {
            }
 
            @Override
-           public CompletableFuture<Void> finalResult(String result) {
+           public CompletableFuture<Void> finalResult(String result,long token) {
                return null;
            }
 
            @Override
-           public CompletableFuture<Void> showDiff(List<ContentBean> list) {
-               return CompletableFuture.runAsync(new Runnable() {
+           public void showDiff(List<ContentBean> list, long token) {
+               CompletableFuture.runAsync(new Runnable() {
                    @Override
                    public void run() {
-                       for (ContentBean bean:list) {
-                           logger.info("文件:" + bean.path + ",内容:" + bean.content+ ",类型:" + bean.operationType);
+                       for (ContentBean bean : list) {
+                           logger.info("文件:" + bean.path + ",内容:" + bean.content + ",类型:" + bean.operationType);
                        }
                    }
                });

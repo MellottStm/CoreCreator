@@ -85,6 +85,8 @@ public class MainController implements Initializable {
 
     @FXML private Button closeButton;
 
+    private long token;
+
     // 用于窗口拖动
     private double xOffset = 0;
     private double yOffset = 0;
@@ -458,7 +460,7 @@ public class MainController implements Initializable {
         promptField.setPromptText("Ask something...");
         promptField.setEditable(true);
         sendButton.setText("➤");
-        llmManager.closeLLMStream();
+        token = System.currentTimeMillis();
         updateAiMessage("已中断请求!");
     }
 
@@ -478,61 +480,68 @@ public class MainController implements Initializable {
         promptField.setPromptText("Waiting Ai response...");
         promptField.setEditable(false);
         initAiMessage();
+        token = System.currentTimeMillis();
         ThreadManager.setThreadToPool(new Runnable() {
             @Override
             public void run() {
-                llmManager.asyncLangChain(chatMessageList, query, new LLMManager.FluxCallBack() {
+                llmManager.asyncLangChain(chatMessageList, query,token,new LLMManager.FluxCallBack() {
                     @Override
-                    public CompletableFuture<Void> llmStream(String result) {
+                    public CompletableFuture<Void> llmStream(String result,long currentToken) {
                         return CompletableFuture.runAsync(new Runnable() {
                             @Override
                             public void run() {
-                                if (promptField.isEditable()) return;
-                                logger.info("大模型流式返回的结果：" + result);
-                                updateAiMessage(result);
+                                if (promptField.isEditable()||currentToken != token){
+                                    logger.info("token不一致!");
+                                } else {
+                                    logger.info("大模型流式返回的结果：" + result);
+                                    updateAiMessage(result);
+                                }
                             }
                         });
                     }
 
                     @Override
-                    public CompletableFuture<Void> finalResult(String result) {
+                    public CompletableFuture<Void> finalResult(String result,long currentToken) {
                         return CompletableFuture.runAsync(new Runnable() {
                             @Override
                             public void run() {
-                                if (promptField.isEditable()) return;
-                                logger.info("大模型流式返回的最终结果：" + result);
-                                updateAiMessage(result);
-                                chatMessageList.add(UserMessage.from(query));
-                                chatMessageList.add(AiMessage.from(result));
-                                Platform.runLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        promptField.setPromptText("Ask something...");
-                                        promptField.setEditable(true);
-                                        sendButton.setText("➤");
-                                    }
-                                });
-                            }
-                        });
-                    }
-
-                    @Override
-                    public CompletableFuture<Void> showDiff(List<ContentBean> list) {
-                        return CompletableFuture.runAsync(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (list != null) {
+                                logger.info("token为:" + token);
+                                if (promptField.isEditable()||currentToken != token) {
+                                    logger.info("token不一致!");
+                                } else {
+                                    logger.info("大模型流式返回的最终结果：" + result);
+                                    updateAiMessage(result);
+                                    chatMessageList.add(UserMessage.from(query));
+                                    chatMessageList.add(AiMessage.from(result));
                                     Platform.runLater(new Runnable() {
                                         @Override
                                         public void run() {
-                                            if (!list.isEmpty()) {
-                                                showDiffDialog(list);
-                                            }
+                                            promptField.setPromptText("Ask something...");
+                                            promptField.setEditable(true);
+                                            sendButton.setText("➤");
                                         }
                                     });
                                 }
                             }
                         });
+                    }
+
+                    @Override
+                    public void showDiff(List<ContentBean> list, long currentToken) {
+                        if (currentToken != token) {
+                            logger.info("token不一致!");
+                        } else {
+                            if (list != null) {
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (!list.isEmpty()) {
+                                            showDiffDialog(list);
+                                        }
+                                    }
+                                });
+                            }
+                        }
                     }
                 });
             }
