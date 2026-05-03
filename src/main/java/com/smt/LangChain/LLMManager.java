@@ -90,8 +90,11 @@ public class LLMManager {
 
 
 
-    public Result<ToolsPrompt.intentClass> classification (List<ChatMessage> chatMessageList) {
-        return intentAssistant.intentClassification(chatMessageList);
+    public Result<ToolsPrompt.intentClass> classification (List<ChatMessage> chatMessageList,String query) {
+        List<ChatMessage> intentChatMessages = new ArrayList<>();
+        intentChatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+        intentChatMessages.add(SystemMessage.from("用户的当前请求:" + query));
+        return intentAssistant.intentClassification(intentChatMessages);
     }
 
 
@@ -100,7 +103,7 @@ public class LLMManager {
     public CompletableFuture<List<ContentBean>> requestLLMStream (List<ChatMessage> chatMessageList,String query, RequestCallBack callBack) {
         CompletableFuture<List<ContentBean>> completableFuture = new CompletableFuture<>();
         StringBuffer content = new StringBuffer();
-        ToolsPrompt.intentClass intentClass = classification(chatMessageList).content();
+        ToolsPrompt.intentClass intentClass = classification(chatMessageList,query).content();
         if (intentClass == ToolsPrompt.intentClass.work) {
             logger.info("这是work意图!");
             callBack.streamResult("检测到用户的意图为任务意图!");
@@ -121,7 +124,7 @@ public class LLMManager {
                 List<ChatMessage> contentChatMessages = new ArrayList<>();
                 contentChatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
                 contentChatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
-                contentChatMessages.add(SystemMessage.from("用户的当前请求:" + ((UserMessage) chatMessageList.get(chatMessageList.size()-1)).singleText()));
+                contentChatMessages.add(SystemMessage.from("用户的当前请求:" + query));
                 contentChatMessages.add(SystemMessage.from(paths.toString()));
                 List<ContentBean> list = contentManageAssistant.fileContent(contentChatMessages).list;
                 StringBuilder finalResult = new StringBuilder();

@@ -42,6 +42,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 
@@ -116,6 +117,8 @@ public class MainController implements Initializable {
     private Set<String> expandedPaths = new HashSet<>();
 
     private ProjectListController projectListController;
+
+    private CompletableFuture<List<ContentBean>> requestLLMStreamFuture;
 
     public void setStage (Stage stage,Stage projectStage,ProjectListController controller) {
         this.stage= stage;
@@ -203,7 +206,11 @@ public class MainController implements Initializable {
         sendButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                sendMsg();
+                if (sendButton.getText().equals("➤")) {
+                    sendMsg();
+                } else {
+                    stopLLMRequest();
+                }
             }
         });
         //7. 回车发送消息
@@ -449,6 +456,19 @@ public class MainController implements Initializable {
         }
     }
 
+
+    private void stopLLMRequest () {
+        promptField.setPromptText("Ask something...");
+        promptField.setEditable(true);
+        sendButton.setText("➤");
+        if (requestLLMStreamFuture != null) {
+            if (!requestLLMStreamFuture.isDone()) {
+                requestLLMStreamFuture.complete(null);
+            }
+        }
+        updateAiMessage("已中断请求!");
+    }
+
     private void sendMsg () {
         if (promptField.getText() == null || promptField.getText().isBlank() || promptField.getText().isEmpty()) {
             Toast.makeText(stage, "The input box cannot be empty!", 5000);
@@ -464,12 +484,11 @@ public class MainController implements Initializable {
         promptField.clear();
         promptField.setPromptText("Waiting Ai response...");
         promptField.setEditable(false);
-        sendButton.setDisable(true);
         initAiMessage();
         ThreadManager.setThreadToPool(new Runnable() {
             @Override
             public void run() {
-                llmManager.requestLLMStream(chatMessageList, query ,new LLMManager.RequestCallBack() {
+                requestLLMStreamFuture = llmManager.requestLLMStream(chatMessageList, query ,new LLMManager.RequestCallBack() {
                     @Override
                     public void streamResult(String result) {
                         logger.info("大模型流式返回的结果：" + result);
@@ -487,11 +506,13 @@ public class MainController implements Initializable {
                             public void run() {
                                 promptField.setPromptText("Ask something...");
                                 promptField.setEditable(true);
-                                sendButton.setDisable(false);
+                                sendButton.setText("➤");
                             }
                         });
                     }
-                }).whenComplete((resultBeanList, throwable) -> {
+                });
+                requestLLMStreamFuture.join();
+                requestLLMStreamFuture.whenComplete((resultBeanList, throwable) -> {
                     if (resultBeanList != null) {
                         Platform.runLater(new Runnable() {
                             @Override
@@ -503,6 +524,7 @@ public class MainController implements Initializable {
                 });
             }
         });
+        sendButton.setText("‖");
     }
 
 

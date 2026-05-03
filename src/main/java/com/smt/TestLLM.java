@@ -21,7 +21,7 @@ public class TestLLM {
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("C:\\小说");
        logger.info(ToolsPrompt.chatPrompt);
-       String query = "帮我续写第二章";
+       String query = "帮我续写第二章,要新建一个文件";
        llmManager.requestLLMStream(chatMessageList, query,new LLMManager.RequestCallBack() {
            @Override
            public void streamResult(String result) {
