@@ -20,34 +20,40 @@ public class TestLLM {
 
     public static List<ChatMessage> chatMessageList = new ArrayList<>();
 
-    public static CompletableFuture<List<ContentBean>> llmmcpResultBeanCompletableFuture;
 
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("C:\\小说");
        logger.info(ToolsPrompt.chatPrompt);
-       String query = "帮我续写第二章,要新建一个文件";
-       llmmcpResultBeanCompletableFuture = new CompletableFuture<>();
-       llmmcpResultBeanCompletableFuture = llmManager.requestLLMStream(chatMessageList, query,new LLMManager.RequestCallBack() {
+       String query = "你爸爸是谁？";
+
+       llmManager.asyncLangChain(chatMessageList, query, new LLMManager.FluxCallBack() {
            @Override
-           public void streamResult(String result) {
-               logger.info("流式输出:" + result);
-               llmmcpResultBeanCompletableFuture.complete(null);
+           public CompletableFuture<Void> llmStream(String result) {
+               return CompletableFuture.runAsync(new Runnable() {
+                   @Override
+                   public void run() {
+                       logger.info("流式输出:" + result);
+                   }
+               });
            }
 
            @Override
-           public void finalResult(String result) {
-               logger.info("完整的回答:" + result);
-               chatMessageList.add(UserMessage.from(query));
-               chatMessageList.add(AiMessage.from(result));
+           public CompletableFuture<Void> finalResult(String result) {
+               return null;
+           }
+
+           @Override
+           public CompletableFuture<Void> showDiff(List<ContentBean> list) {
+               return CompletableFuture.runAsync(new Runnable() {
+                   @Override
+                   public void run() {
+                       for (ContentBean bean:list) {
+                           logger.info("文件:" + bean.path + ",内容:" + bean.content+ ",类型:" + bean.operationType);
+                       }
+                   }
+               });
            }
        });
-       llmmcpResultBeanCompletableFuture.whenComplete((result,e) -> {
-               logger.info("已完成！");
-
-            for (ContentBean bean:result) {
-                logger.info("文件:" + bean.path + ",内容:" + bean.content+ ",类型:" + bean.operationType);
-            }
-        });
 
 
 

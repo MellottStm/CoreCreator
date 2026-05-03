@@ -8,7 +8,6 @@ import com.smt.Editor.EditorManager;
 import com.smt.Editor.FileManager;
 import com.smt.LangChain.Bean.ContentBean;
 import com.smt.LangChain.LLMManager;
-import com.smt.LangChain.ToolsPrompt;
 import com.smt.MCP.MCPManager;
 import com.smt.Main;
 import com.smt.Thread.ThreadManager;
@@ -117,8 +116,6 @@ public class MainController implements Initializable {
     private Set<String> expandedPaths = new HashSet<>();
 
     private ProjectListController projectListController;
-
-    private CompletableFuture<List<ContentBean>> requestLLMStreamFuture;
 
     public void setStage (Stage stage,Stage projectStage,ProjectListController controller) {
         this.stage= stage;
@@ -461,12 +458,7 @@ public class MainController implements Initializable {
         promptField.setPromptText("Ask something...");
         promptField.setEditable(true);
         sendButton.setText("➤");
-        if (requestLLMStreamFuture != null) {
-            if (!requestLLMStreamFuture.isDone()) {
-                requestLLMStreamFuture.completeExceptionally(new Exception("用户中断输出!"));
-                requestLLMStreamFuture.cancel(true);
-            }
-        }
+        llmManager.closeLLMStream();
         updateAiMessage("已中断请求!");
     }
 
@@ -489,38 +481,54 @@ public class MainController implements Initializable {
         ThreadManager.setThreadToPool(new Runnable() {
             @Override
             public void run() {
-                requestLLMStreamFuture = llmManager.requestLLMStream(chatMessageList, query ,new LLMManager.RequestCallBack() {
+                llmManager.asyncLangChain(chatMessageList, query, new LLMManager.FluxCallBack() {
                     @Override
-                    public void streamResult(String result) {
-                        if (promptField.isEditable()) return;
-                        logger.info("大模型流式返回的结果：" + result);
-                        updateAiMessage(result);
-                    }
-
-                    @Override
-                    public void finalResult(String result) {
-                        if (promptField.isEditable()) return;
-                        logger.info("大模型流式返回的最终结果：" + result);
-                        updateAiMessage(result);
-                        chatMessageList.add(UserMessage.from(query));
-                        chatMessageList.add(AiMessage.from(result));
-                        Platform.runLater(new Runnable() {
+                    public CompletableFuture<Void> llmStream(String result) {
+                        return CompletableFuture.runAsync(new Runnable() {
                             @Override
                             public void run() {
-                                promptField.setPromptText("Ask something...");
-                                promptField.setEditable(true);
-                                sendButton.setText("➤");
+                                if (promptField.isEditable()) return;
+                                logger.info("大模型流式返回的结果：" + result);
+                                updateAiMessage(result);
                             }
                         });
                     }
-                });
-                requestLLMStreamFuture.whenComplete((resultBeanList, throwable) -> {
-                    if (promptField.isEditable()) return;
-                    if (resultBeanList != null) {
-                        Platform.runLater(new Runnable() {
+
+                    @Override
+                    public CompletableFuture<Void> finalResult(String result) {
+                        return CompletableFuture.runAsync(new Runnable() {
                             @Override
                             public void run() {
-                                showDiff(resultBeanList);
+                                if (promptField.isEditable()) return;
+                                logger.info("大模型流式返回的最终结果：" + result);
+                                updateAiMessage(result);
+                                chatMessageList.add(UserMessage.from(query));
+                                chatMessageList.add(AiMessage.from(result));
+                                Platform.runLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        promptField.setPromptText("Ask something...");
+                                        promptField.setEditable(true);
+                                        sendButton.setText("➤");
+                                    }
+                                });
+                            }
+                        });
+                    }
+
+                    @Override
+                    public CompletableFuture<Void> showDiff(List<ContentBean> list) {
+                        return CompletableFuture.runAsync(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (list != null) {
+                                    Platform.runLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showDiffDialog(list);
+                                        }
+                                    });
+                                }
                             }
                         });
                     }
@@ -593,7 +601,7 @@ public class MainController implements Initializable {
     }
 
 
-    private void showDiff (List<ContentBean> resultBeanList) {
+    private void showDiffDialog(List<ContentBean> resultBeanList) {
         try {
             FXMLLoader loader = new FXMLLoader(Main.class.getResource("/View/DiffView.fxml"));
             Parent root = loader.load();
@@ -724,15 +732,17 @@ public class MainController implements Initializable {
      * @param currentText AI 当前累积的完整文本（包含 Markdown 语法）
      */
     private void updateAiMessage(String currentText) {
-        Platform.runLater(() -> {
-            WebEngine engine = chatWebView.getEngine();
-            // 利用 ChatRenderer 生成用于更新内部 HTML 的 JS 脚本
-            String script = ChatRenderer.generateUpdateScript(currentText);
-            // 执行脚本
-            engine.executeScript(script);
-            // 保持滚动条在最底部
-            engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        });
+        if (currentText != null) {
+            Platform.runLater(() -> {
+                WebEngine engine = chatWebView.getEngine();
+                // 利用 ChatRenderer 生成用于更新内部 HTML 的 JS 脚本
+                String script = ChatRenderer.generateUpdateScript(currentText);
+                // 执行脚本
+                engine.executeScript(script);
+                // 保持滚动条在最底部
+                engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+            });
+        }
     }
 
 

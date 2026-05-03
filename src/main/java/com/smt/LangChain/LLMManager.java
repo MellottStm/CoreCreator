@@ -2,19 +2,28 @@ package com.smt.LangChain;
 
 import com.smt.Cache.Configure;
 import com.smt.LangChain.Bean.ContentBean;
+import com.smt.LangChain.Bean.FluxBean;
 import com.smt.LangChain.Bean.ToolFileBean;
+import com.smt.Thread.ThreadManager;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
-import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.chat.response.PartialResponse;
+import dev.langchain4j.model.chat.response.PartialResponseContext;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.Result;
 import org.apache.log4j.Logger;
+import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class LLMManager {
@@ -24,6 +33,12 @@ public class LLMManager {
     private static final Logger logger = Logger.getLogger(TAG);
 
     private String dirPath;
+
+    private Disposable disposable;
+
+    private List<ContentBean> contentList = new ArrayList<>();
+
+    private boolean isDispose = false;
 
     // 单例模式或静态工厂方法
     public OpenAiChatModel createModel() {
@@ -98,10 +113,84 @@ public class LLMManager {
     }
 
 
+    public Flux<Object> createLLMStream (List<ChatMessage> chatMessageList,String query) {
+        return Flux.create(sink->{
+            requestLLMStream(chatMessageList, query, new RequestCallBack() {
+                @Override
+                public void streamResult(String result) {
+                    FluxBean fluxBean = new FluxBean();
+                    fluxBean.content = result;
+                    sink.next(fluxBean);
+                }
+
+                @Override
+                public void finalResult(String result) {
+                    FluxBean fluxBean = new FluxBean();
+                    fluxBean.content = result;
+                    fluxBean.isEnd = true;
+                    sink.next(fluxBean);
+                }
+
+                @Override
+                public void showDiff(List<ContentBean> list) {
+                    FluxBean fluxBean = new FluxBean();
+                    fluxBean.list = list;
+                    sink.next(fluxBean);
+                    sink.complete();
+                }
+            });
+        });
+    }
 
 
-    public CompletableFuture<List<ContentBean>> requestLLMStream (List<ChatMessage> chatMessageList,String query, RequestCallBack callBack) {
-        CompletableFuture<List<ContentBean>> completableFuture = new CompletableFuture<>();
+    public void asyncLangChain (List<ChatMessage> chatMessageList,String query, FluxCallBack callBack) {
+        isDispose = false;
+        contentList = new ArrayList<>();
+        Flux<Void> processedFlux = createLLMStream(chatMessageList,query).publishOn(Schedulers.fromExecutor(ThreadManager.executor))
+              .concatMap(bean->{
+                  FluxBean fluxBean = (FluxBean) bean;
+                  if (fluxBean.list != null) {
+                      contentList = fluxBean.list;
+                  }
+                  if (fluxBean.isEnd) {
+                      return Mono.fromCompletionStage(() -> callBack.finalResult(fluxBean.content));
+                  } else {
+                      return Mono.fromCompletionStage(() -> callBack.llmStream(fluxBean.content));
+                  }
+              })
+              .doOnComplete(()->{
+                  callBack.showDiff(contentList);
+              });
+        disposable = processedFlux.subscribe();
+    }
+
+
+
+
+    private void requestLLMStream (List<ChatMessage> chatMessageList,String query, RequestCallBack callBack) {
+        intentAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .tools(new ToolsManager.intentTool())
+                .streamingChatModel(createStreamModel())
+                .build();
+        chatAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .streamingChatModel(createStreamModel())
+                .build();
+        fileManageAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .tools(new ToolsManager.fileManageTool())
+                .streamingChatModel(createStreamModel())
+                .build();
+        contentManageAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .tools(new ToolsManager.contentManageTool())
+                .streamingChatModel(createStreamModel())
+                .build();
+        summeryAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .streamingChatModel(createStreamModel())
+                .build();
         StringBuffer content = new StringBuffer();
         ToolsPrompt.intentClass intentClass = classification(chatMessageList,query).content();
         if (intentClass == ToolsPrompt.intentClass.work) {
@@ -139,63 +228,55 @@ public class LLMManager {
                         .onPartialResponse(new Consumer<String>() {
                             @Override
                             public void accept(String s) {
-                                if (!completableFuture.isDone()) {
-                                    content.append(s);
-                                    callBack.streamResult(content.toString());
-                                }
+                                content.append(s);
+                                callBack.streamResult(content.toString());
                             }
                         }).onError(new Consumer<Throwable>() {
                             @Override
                             public void accept(Throwable throwable) {
-                                if (!completableFuture.isDone()) {
                                     callBack.finalResult(content.toString());
-                                    completableFuture.completeExceptionally(throwable);
-                                }
                             }
                         }).onCompleteResponse(new Consumer<ChatResponse>() {
                             @Override
                             public void accept(ChatResponse chatResponse) {
-                                if (!completableFuture.isDone()) {
-                                    callBack.finalResult(content.toString());
-                                    completableFuture.complete(list);
-                                }
+                                callBack.finalResult(content.toString());
+                                callBack.showDiff(list);
+
                             }
                         }).start();
-            } else {
-                completableFuture.completeExceptionally(new Exception("没有更改文件!"));
             }
         } else {
             logger.info("这是chat意图!");
             List<ChatMessage> chatList = new ArrayList<>();
             chatList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
             chatList.add(SystemMessage.from("用户的当前请求:" + query));
-            chatAssistant.chatStream(chatList).onPartialResponse(new Consumer<String>() {
+            chatAssistant.chatStream(chatList)
+            .onPartialResponse(new Consumer<String>() {
                 @Override
                 public void accept(String s) {
-                    if (!completableFuture.isDone()) {
-                        content.append(s);
-                        callBack.streamResult(content.toString());
-                    }
+                    content.append(s);
+                    callBack.streamResult(content.toString());
                 }
             }).onError(new Consumer<Throwable>() {
                 @Override
                 public void accept(Throwable throwable) {
-                    if (!completableFuture.isDone()) {
-                        callBack.finalResult(content.toString());
-                        completableFuture.completeExceptionally(throwable);
-                    }
+                    callBack.finalResult(content.toString());
+
                 }
             }).onCompleteResponse(new Consumer<ChatResponse>() {
                 @Override
                 public void accept(ChatResponse chatResponse) {
-                    if (!completableFuture.isDone()) {
-                        callBack.finalResult(content.toString());
-                        completableFuture.completeExceptionally(new Exception("已经完成输出!"));
-                    }
+                    callBack.finalResult(content.toString());
+                    callBack.showDiff(null);
                 }
             }).start();
         }
-        return completableFuture;
+    }
+
+    public void closeLLMStream() {
+        disposable.dispose();
+        logger.info("已中断Flux流!");
+        isDispose = true;
     }
 
 
@@ -207,6 +288,19 @@ public class LLMManager {
         void streamResult (String result);
 
         void finalResult(String result);
+
+        void showDiff (List<ContentBean> list);
+
+    }
+
+
+    public interface FluxCallBack {
+
+        CompletableFuture<Void> llmStream(String result);
+
+        CompletableFuture<Void> finalResult(String result);
+
+        CompletableFuture<Void> showDiff (List<ContentBean> list);
 
     }
 

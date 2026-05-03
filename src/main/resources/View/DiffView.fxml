@@ -33,7 +33,7 @@
             </ImageView>
 
             <Label fx:id="windowTitle"
-                   text="Diff Viewer"
+                   text="CoreCreator"
                    style="-fx-text-fill: #ffffff;
                           -fx-font-weight: bold;
                           -fx-font-size: 14px;"/>
