@@ -464,6 +464,7 @@ public class MainController implements Initializable {
         if (requestLLMStreamFuture != null) {
             if (!requestLLMStreamFuture.isDone()) {
                 requestLLMStreamFuture.completeExceptionally(new Exception("用户中断输出!"));
+                requestLLMStreamFuture.cancel(true);
             }
         }
         updateAiMessage("已中断请求!");
@@ -491,12 +492,14 @@ public class MainController implements Initializable {
                 requestLLMStreamFuture = llmManager.requestLLMStream(chatMessageList, query ,new LLMManager.RequestCallBack() {
                     @Override
                     public void streamResult(String result) {
+                        if (promptField.isEditable()) return;
                         logger.info("大模型流式返回的结果：" + result);
                         updateAiMessage(result);
                     }
 
                     @Override
                     public void finalResult(String result) {
+                        if (promptField.isEditable()) return;
                         logger.info("大模型流式返回的最终结果：" + result);
                         updateAiMessage(result);
                         chatMessageList.add(UserMessage.from(query));
@@ -512,6 +515,7 @@ public class MainController implements Initializable {
                     }
                 });
                 requestLLMStreamFuture.whenComplete((resultBeanList, throwable) -> {
+                    if (promptField.isEditable()) return;
                     if (resultBeanList != null) {
                         Platform.runLater(new Runnable() {
                             @Override
