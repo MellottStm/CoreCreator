@@ -14,6 +14,7 @@ import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.Result;
+import dev.langchain4j.service.TokenStream;
 import org.apache.log4j.Logger;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -72,6 +73,8 @@ public class LLMManager {
     private ToolsAssistant contentManageAssistant;
 
     private ToolsAssistant summeryAssistant;
+
+    private TokenStream tokenStream;
 
     public LLMManager (String dirPath) {
         if (createModel() == null || createStreamModel() == null) {
@@ -146,6 +149,7 @@ public class LLMManager {
     public void asyncLangChain (List<ChatMessage> chatMessageList,String query, FluxCallBack callBack) {
         isDispose = false;
         contentList = new ArrayList<>();
+        disposable = null;
         Flux<Void> processedFlux = createLLMStream(chatMessageList,query).publishOn(Schedulers.fromExecutor(ThreadManager.executor))
               .concatMap(bean->{
                   FluxBean fluxBean = (FluxBean) bean;
@@ -168,29 +172,6 @@ public class LLMManager {
 
 
     private void requestLLMStream (List<ChatMessage> chatMessageList,String query, RequestCallBack callBack) {
-        intentAssistant = AiServices.builder(ToolsAssistant.class)
-                .chatModel(createModel())
-                .tools(new ToolsManager.intentTool())
-                .streamingChatModel(createStreamModel())
-                .build();
-        chatAssistant = AiServices.builder(ToolsAssistant.class)
-                .chatModel(createModel())
-                .streamingChatModel(createStreamModel())
-                .build();
-        fileManageAssistant = AiServices.builder(ToolsAssistant.class)
-                .chatModel(createModel())
-                .tools(new ToolsManager.fileManageTool())
-                .streamingChatModel(createStreamModel())
-                .build();
-        contentManageAssistant = AiServices.builder(ToolsAssistant.class)
-                .chatModel(createModel())
-                .tools(new ToolsManager.contentManageTool())
-                .streamingChatModel(createStreamModel())
-                .build();
-        summeryAssistant = AiServices.builder(ToolsAssistant.class)
-                .chatModel(createModel())
-                .streamingChatModel(createStreamModel())
-                .build();
         StringBuffer content = new StringBuffer();
         ToolsPrompt.intentClass intentClass = classification(chatMessageList,query).content();
         if (intentClass == ToolsPrompt.intentClass.work) {
@@ -224,12 +205,12 @@ public class LLMManager {
                 summeryList.add(SystemMessage.from("用户的最终输出内容:" + finalResult));
                 summeryList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
                 summeryList.add(SystemMessage.from("用户的当前请求:" + query));
-                summeryAssistant.summeryStream(summeryList)
-                        .onPartialResponse(new Consumer<String>() {
-                            @Override
-                            public void accept(String s) {
-                                content.append(s);
-                                callBack.streamResult(content.toString());
+                tokenStream = summeryAssistant.summeryStream(summeryList)
+                        .onPartialResponseWithContext((response,context)->{
+                            content.append(response.text());
+                            callBack.streamResult(content.toString());
+                            if (isDispose) {
+                                context.streamingHandle().cancel();
                             }
                         }).onError(new Consumer<Throwable>() {
                             @Override
@@ -243,19 +224,20 @@ public class LLMManager {
                                 callBack.showDiff(list);
 
                             }
-                        }).start();
+                        });
+                tokenStream.start();
             }
         } else {
             logger.info("这是chat意图!");
             List<ChatMessage> chatList = new ArrayList<>();
             chatList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
             chatList.add(SystemMessage.from("用户的当前请求:" + query));
-            chatAssistant.chatStream(chatList)
-            .onPartialResponse(new Consumer<String>() {
-                @Override
-                public void accept(String s) {
-                    content.append(s);
-                    callBack.streamResult(content.toString());
+            tokenStream = chatAssistant.chatStream(chatList)
+            .onPartialResponseWithContext((response,context)->{
+                content.append(response.text());
+                callBack.streamResult(content.toString());
+                if (isDispose) {
+                    context.streamingHandle().cancel();
                 }
             }).onError(new Consumer<Throwable>() {
                 @Override
@@ -269,12 +251,15 @@ public class LLMManager {
                     callBack.finalResult(content.toString());
                     callBack.showDiff(null);
                 }
-            }).start();
+            });
+            tokenStream.start();
         }
     }
 
     public void closeLLMStream() {
-        disposable.dispose();
+        if (disposable != null) {
+            disposable.dispose();
+        }
         logger.info("已中断Flux流!");
         isDispose = true;
     }

@@ -525,7 +525,9 @@ public class MainController implements Initializable {
                                     Platform.runLater(new Runnable() {
                                         @Override
                                         public void run() {
-                                            showDiffDialog(list);
+                                            if (!list.isEmpty()) {
+                                                showDiffDialog(list);
+                                            }
                                         }
                                     });
                                 }
