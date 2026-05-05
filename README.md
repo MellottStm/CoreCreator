@@ -77,7 +77,7 @@ jpackage
 
 ### 1. 下载安装
 
-前往 [Releases]("https://github.com/MellottStm/CoreCreator/releases/tag/release) 下载最新版本：
+前往 [Release]("https://github.com/MellottStm/CoreCreator/releases/tag/release") 下载最新版本：
 
 - **CoreCreator-1.0.0-windows**
 
