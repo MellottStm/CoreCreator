@@ -1,10 +1,13 @@
 # 🌟 CoreCreator - AI 智能编辑器助手
 
 <p align="center">
-  <img src="src/main/resources/Img/logo.png" width="280" alt="Lumina Hero">
+  <img src="src/main/resources/Img/logo.png" width="280" alt="Logo">
 </p>
 
 <p align="center">
+  <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/release/MellottStm/CoreCreator.git" alt="release">
+  </a>
   <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   </a>
@@ -19,6 +22,48 @@
 - **💬 自然语言编程** —— 用中文/英文直接说需求，AI 自动实现
 - **🔄 一键重构与优化** —— 代码优化、性能提升、架构调整
 - **🌐 支持 100+ 种编程语言**（重点优化 Python、TypeScript、Go、Rust、Java 等）
+
+## 项目构建
+```bash
+
+#1、构建
+mvn clean package
+
+#带控制台debug的
+jpackage 
+    --name CoreCreator 
+    --icon "src\main\resources\Img\logo.ico" 
+    --input "target" 
+    --main-jar "CoreCreator-1.0-SNAPSHOT-fat.jar" 
+    --main-class "com.smt.Main" 
+    --module-path “你的openjfx的路径“ 
+    --add-modules javafx.controls,javafx.web,java.logging,javafx.fxml,javafx.media,javafx.graphics,javafx.base,jdk.crypto.ec,java.sql
+    --java-options "-Xmx2048m -Dfile.encoding=UTF-8 -Dhttps.protocols=TLSv1.2,TLSv1.3 -Djavax.net.debug=ssl:handshake" 
+    --type msi 
+    --vendor "smt" 
+    --win-console 
+    --win-shortcut 
+    --win-menu 
+    --win-dir-chooser 
+    --win-per-user-install
+
+#不带控制台的
+jpackage 
+    --name CoreCreator 
+    --icon "src\main\resources\Img\logo.ico" 
+    --input "target" --main-jar "CoreCreator-1.0-SNAPSHOT-fat.jar" 
+    --main-class "com.smt.Main" 
+    --module-path “你的openjfx的路径“  
+    --add-modules javafx.controls,javafx.web,java.logging,javafx.fxml,javafx.media,javafx.graphics,javafx.base,jdk.crypto.ec,java.sql 
+    --type msi 
+    --vendor "smt" 
+    --win-console 
+    --win-shortcut 
+    --win-menu 
+    --win-dir-chooser 
+    --win-per-user-install
+
+```
 
 
 ## 📸 产品预览

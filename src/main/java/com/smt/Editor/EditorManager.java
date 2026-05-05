@@ -42,6 +42,15 @@ public class EditorManager {
 
     public final static Map<Tab, Long> tabToLastModifiedTime = new HashMap<>();
 
+    public static void releaseMap () {
+        openTabs.clear();
+        tabToEditor.clear();
+        tabToTextReadOnly.clear();
+        tabToFile.clear();
+        lastSavedContent.clear();
+        tabToLastModifiedTime.clear();
+    }
+
     public static String getLanguageByExtension(String fileName) {
         String lower = fileName.toLowerCase();
         if (lower.endsWith(".java")) return "java";

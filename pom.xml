@@ -106,7 +106,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>MusicPlayer-1.0-SNAPSHOT-fat</finalName>
+                    <finalName>CoreCreator-1.0-SNAPSHOT-fat</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
@@ -135,7 +135,7 @@
                 <artifactId>jpackage-maven-plugin</artifactId>
                 <version>1.4.0</version>
                 <configuration>
-                    <name>AI编辑器</name>
+                    <name>CoreCreator</name>
                     <appVersion>1.0.0</appVersion>
                     <mainClass>com.smt.Main</mainClass>
                     <destination>target/dist</destination>

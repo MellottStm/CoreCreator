@@ -127,12 +127,12 @@ public class MainController implements Initializable {
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-                releaseTimer();
+                release();
             }
         });
     }
 
-    private void releaseTimer () {
+    private void release() {
         if (saveTimer != null) {
             saveTimer.purge();
             saveTimer.cancel();
@@ -143,6 +143,7 @@ public class MainController implements Initializable {
             fileWatchTimer.cancel();
             fileWatchTimer = null;
         }
+        EditorManager.releaseMap();
         logger.info("已关闭Main窗口!");
     }
 
@@ -233,7 +234,7 @@ public class MainController implements Initializable {
         if (stage != null) {
             stage.close();
         }
-        releaseTimer();
+        release();
     }
 
     private void closeProject () {
@@ -243,7 +244,7 @@ public class MainController implements Initializable {
         if (stage != null) {
             stage.close();
         }
-        releaseTimer();
+        release();
     }
 
 
@@ -590,7 +591,7 @@ public class MainController implements Initializable {
             if (stage != null) {
                 stage.close();
             }
-            releaseTimer();
+            release();
         });
     }
 
