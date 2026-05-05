@@ -41,6 +41,8 @@ public class ConfigureController implements Initializable {
 
     @FXML private Button cancelButton;
 
+    private SettingEvent event;
+
     private Stage stage;
 
     @Override
@@ -93,11 +95,11 @@ public class ConfigureController implements Initializable {
 
     public void setStage(Stage stage,SettingEvent event) {
         this.stage = stage;
+        this.event = event;
         EditorManager.makeResizable(stage,5,480,280);
         this.stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent windowEvent) {
-                event.CloseEvent();
                 saveSettings();
             }
         });
@@ -112,6 +114,10 @@ public class ConfigureController implements Initializable {
 
         // 保存到 LLMManager（推荐通过单例或静态方式保存）
         CacheManager.saveConfig(apiKey,modelName,baseUrl);
+
+        if (event != null) {
+            event.CloseEvent();
+        }
 
         stage.close();
     }

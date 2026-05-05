@@ -23,7 +23,7 @@
 - **🔄 一键重构与优化** —— 代码优化、性能提升、架构调整
 - **🌐 支持 100+ 种编程语言**（重点优化 Python、TypeScript、Go、Rust、Java 等）
 
-## 项目构建
+## 🌴 项目构建
 ```bash
 
 #1、构建
@@ -57,7 +57,6 @@ jpackage
     --add-modules javafx.controls,javafx.web,java.logging,javafx.fxml,javafx.media,javafx.graphics,javafx.base,jdk.crypto.ec,java.sql 
     --type msi 
     --vendor "smt" 
-    --win-console 
     --win-shortcut 
     --win-menu 
     --win-dir-chooser 
