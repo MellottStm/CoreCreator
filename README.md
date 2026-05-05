@@ -11,7 +11,9 @@
   <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   </a>
-  <img src="https://img.shields.io/badge/平台-Windows-blue" alt="Platforms">
+  <a>
+    <img src="https://img.shields.io/badge/平台-Windows-blue" alt="Platforms">
+  </a>
 </p>
 
 ---
