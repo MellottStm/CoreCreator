@@ -6,9 +6,6 @@
 
 <p align="center">
   <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/release/MellottStm/CoreCreator.git" alt="release">
-  </a>
-  <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   </a>
   <img src="https://img.shields.io/badge/平台-Windows-blue" alt="Platforms">
@@ -80,12 +77,11 @@ jpackage
 
 ### 1. 下载安装
 
-前往 [Releases](https://github.com/yourusername/lumina/releases) 下载最新版本：
+前往 [Releases]("https://github.com/MellottStm/CoreCreator/releases/tag/release) 下载最新版本：
 
-- **Windows**
+- **CoreCreator-1.0.0-windows**
 
 ### 2. 启动 CoreCreator
-
 
 ### 3. 打开项目
 
