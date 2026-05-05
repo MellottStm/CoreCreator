@@ -8,13 +8,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/yourusername/lumina/releases">
+  <a href="https://github.com/MellottStm/CoreCreator">
     <img src="https://img.shields.io/github/v/release/yourusername/lumina?color=4CAF50&label=最新版本" alt="Latest Release">
   </a>
-  <a href="https://github.com/yourusername/lumina/stargazers">
-    <img src="https://github.com/MellottStm/CoreCreator/blob/master?style=social" alt="Stars">
+  <a href="https://github.com/MellottStm/CoreCreator">
+    <img src="https://img.shields.io/github/stars/yourusername/lumina?style=social" alt="Stars">
   </a>
-  <img src="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE" alt="License">
+  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/平台-Windows-blue" alt="Platforms">
 </p>
 
