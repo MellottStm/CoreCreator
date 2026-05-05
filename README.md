@@ -1,8 +1,5 @@
 # 🌟 CoreCreator - AI 智能编辑器助手
 
-> ** AI 编辑器**  
-> 支持全项目理解、对话式编程、代码重构，一键生成完整功能。
-
 <p align="center">
   <img src="src/main/resources/Img/logo.png" width="280" alt="Lumina Hero">
 </p>
