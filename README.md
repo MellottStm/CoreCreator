@@ -31,10 +31,10 @@
 ## 📸 产品预览
 
 <p align="center">
-  <img src="demo2.png" width="48%" alt="大模型配置">
+  <img src="demo2.png" width="100%" alt="大模型配置">
 </p>
 <p align="center">
-  <img src="demo3.png" width="48%" alt="自然语言编程">
+  <img src="demo3.png" width="100%" alt="自然语言编程">
 </p>
 
 ---
