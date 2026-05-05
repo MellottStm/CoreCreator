@@ -52,4 +52,4 @@
 
 ### 3. 打开项目
 
-### 4.首次启动需要配置 API Key、model name、base url，建议使用 [OpenAI](https://platform.openai.com/account/api-keys)。
+### 4.首次启动需要配置 API Key、model name、base url，国内外大模型都可以，软件性能受基座大模型影响。
