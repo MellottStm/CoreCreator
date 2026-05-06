@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/MellottStm/CoreCreator/releases/tag/release">
-    <img src="https://img.shields.io/github/release/MellottStm/CoreCreator.svg" alt="License">
+    <img src="https://img.shields.io/github/release/MellottStm/CoreCreator.svg" alt="Release">
   </a>
   <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
