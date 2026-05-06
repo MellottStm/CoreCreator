@@ -67,8 +67,10 @@ jpackage
 ```
 
 
-## 📸 产品预览
-
+## 📸 运行预览
+<p align="center">
+  <img src="demo1.png" width="100%" alt="大模型配置">
+</p>
 <p align="center">
   <img src="demo2.png" width="100%" alt="大模型配置">
 </p>
