@@ -19,9 +19,9 @@ public class TestLLM {
 
 
     public static void main(String[] args) {
-       LLMManager llmManager = new LLMManager("C:\\小说");
+       LLMManager llmManager = new LLMManager("F:\\TestProject\\Test");
        logger.info(ToolsPrompt.chatPrompt);
-       String query = "你爸爸是谁？";
+       String query = "帮我写一个冒泡排序算法";
        long token = System.currentTimeMillis();
        llmManager.asyncLangChain(chatMessageList, query,token ,new LLMManager.FluxCallBack() {
            @Override
@@ -29,7 +29,7 @@ public class TestLLM {
                return CompletableFuture.runAsync(new Runnable() {
                    @Override
                    public void run() {
-                       logger.info("流式输出:" + result);
+                       logger.info("中间输出:" + result);
                    }
                });
            }

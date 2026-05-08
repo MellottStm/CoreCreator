@@ -35,7 +35,10 @@ public class ToolsManager {
 
     }
 
-
+    static class readFileTool {
+        @Tool(value = ToolsPrompt.readFilePrompt)
+        public String getNeedReadFilePath(String path) {return path;}
+    }
 
 
 

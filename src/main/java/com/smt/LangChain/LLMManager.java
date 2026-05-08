@@ -64,6 +64,8 @@ public class LLMManager {
 
     private ToolsAssistant contentManageAssistant;
 
+    private ToolsAssistant needReadAssistant;
+
     private ToolsAssistant summeryAssistant;
 
     public LLMManager (String dirPath) {
@@ -83,6 +85,11 @@ public class LLMManager {
         fileManageAssistant = AiServices.builder(ToolsAssistant.class)
                 .chatModel(createModel())
                 .tools(new ToolsManager.fileManageTool())
+                .streamingChatModel(createStreamModel())
+                .build();
+        needReadAssistant = AiServices.builder(ToolsAssistant.class)
+                .chatModel(createModel())
+                .tools(new ToolsManager.readFileTool())
                 .streamingChatModel(createStreamModel())
                 .build();
         contentManageAssistant = AiServices.builder(ToolsAssistant.class)
