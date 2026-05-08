@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MellottStm/CoreCreator/releases/tag/release">
+  <a href="https://github.com/MellottStm/CoreCreator/releases">
     <img src="https://img.shields.io/github/release/MellottStm/CoreCreator.svg" alt="Release">
   </a>
   <a href="https://github.com/MellottStm/CoreCreator/blob/master/LICENSE">
