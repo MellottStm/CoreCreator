@@ -20,8 +20,7 @@ public class TestLLM {
 
     public static void main(String[] args) {
        LLMManager llmManager = new LLMManager("F:\\TestProject\\Test");
-       logger.info(ToolsPrompt.chatPrompt);
-       String query = "帮我写一个冒泡排序算法";
+       String query = "帮我写一个okhttp的get请求，并且添加依赖到相关文件中";
        long token = System.currentTimeMillis();
        llmManager.asyncLangChain(chatMessageList, query,token ,new LLMManager.FluxCallBack() {
            @Override
@@ -36,19 +35,19 @@ public class TestLLM {
 
            @Override
            public CompletableFuture<Void> finalResult(String result,long token) {
-               return null;
+               return CompletableFuture.runAsync(new Runnable() {
+                   @Override
+                   public void run() {
+
+                   }
+               });
            }
 
            @Override
            public void showDiff(List<ContentBean> list, long token) {
-               CompletableFuture.runAsync(new Runnable() {
-                   @Override
-                   public void run() {
-                       for (ContentBean bean : list) {
-                           logger.info("文件:" + bean.path + ",内容:" + bean.content + ",类型:" + bean.operationType);
-                       }
-                   }
-               });
+               for (ContentBean bean : list) {
+                   logger.info("文件:" + bean.path + ",内容:" + bean.content + ",类型:" + bean.operationType);
+               }
            }
        });
 

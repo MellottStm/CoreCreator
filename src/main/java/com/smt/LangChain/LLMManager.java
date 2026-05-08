@@ -171,8 +171,9 @@ public class LLMManager {
         if (intentClass == ToolsPrompt.intentClass.work) {
             logger.info("这是work意图!");
             callBack.streamResult("检测到用户的意图为任务意图!",token);
+            String readProjectFile = ToolsPrompt.getNeedReadFileContent(dirPath,chatMessageList,query,needReadAssistant);
             List<ChatMessage> chatMessages = new ArrayList<>();
-            chatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
+            chatMessages.add(SystemMessage.from("用户提供的信息:" + readProjectFile));
             chatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
             chatMessages.add(SystemMessage.from("用户的当前请求:" + query));
             List<ToolFileBean> beans = fileManageAssistant.fileManage(chatMessages).list;
@@ -186,7 +187,7 @@ public class LLMManager {
             if (!beans.isEmpty()) {
                 callBack.streamResult("正在输出内容...",token);
                 List<ChatMessage> contentChatMessages = new ArrayList<>();
-                contentChatMessages.add(SystemMessage.from("用户提供的信息:" + ToolsPrompt.getFilePathAndContentPrompt(dirPath)));
+                contentChatMessages.add(SystemMessage.from("用户提供的信息:" + readProjectFile));
                 contentChatMessages.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
                 contentChatMessages.add(SystemMessage.from("用户的当前请求:" + query));
                 contentChatMessages.add(SystemMessage.from(paths.toString()));

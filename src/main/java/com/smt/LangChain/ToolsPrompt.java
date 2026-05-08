@@ -1,11 +1,15 @@
 package com.smt.LangChain;
 
 import com.smt.Editor.FileManager;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.SystemMessage;
 import org.apache.log4j.Logger;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class ToolsPrompt {
@@ -81,6 +85,56 @@ public class ToolsPrompt {
             "3、不能输出任何形式的代码\n" +
             "4、不能输出负面消极的内容，例如色情，暴力，犯罪等。\n" +
             "5、你的输出需要尽量的拟人化和口语化。";
+
+
+    public static String getNeedReadFileContent (String dir,List<ChatMessage> chatMessageList,String query,ToolsAssistant assistant) {
+        StringBuffer result = new StringBuffer();
+        String projectMsg = getProjectFileMsg(dir);
+        result.append(projectMsg);
+        List<ChatMessage> readFileMsgList = new ArrayList<>();
+        try {
+            readFileMsgList.add(SystemMessage.from("用户提供的信息" + projectMsg));
+            readFileMsgList.add(SystemMessage.from("历史信息:" + chatMessageList.toString()));
+            readFileMsgList.add(SystemMessage.from("用户当前的请求 " + query));
+            List<String> filePathList = assistant.needReadFile(readFileMsgList).needReadFileList;
+            if (!filePathList.isEmpty()) {
+                result.append("参考项目目录的文件内容如下:");
+            }
+            for (int i = 0;i < filePathList.size();i++) {
+                logger.info("需要读取的文件:" + filePathList.get(i));
+                String content = FileManager.readProjectFileContent(Paths.get(filePathList.get(i)));
+                if (content != null) {
+                    result.append("文件路径为:").append(filePathList.get(i)).append("的文件内容为:\n").append(content).append("\n");
+                } else {
+                    result.append("该项目有文件:").append(filePathList.get(i)).append("\n");
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("读取文件失败:" + e);
+        }
+        logger.info(result.toString());
+        return result.toString();
+    }
+
+
+    private static String getProjectFileMsg (String dir) {
+        StringBuffer result = new StringBuffer();
+        result.append("用户的项目根目录是:").append(dir).append("\n");
+        result.append("读取用户的项目目录所有的文件列表如下:\n");
+        try {
+            Path startPath = Paths.get(dir);
+            Stream<Path> paths = Files.walk(startPath);
+            paths.filter(Files::isRegularFile) // 只处理文件
+                    .forEach(path -> {
+                        // 读取文件内容（默认 UTF-8）
+                        result.append("该项目有文件:").append(path.toAbsolutePath()).append("\n");
+                    });
+
+        } catch (Exception e) {
+            logger.warn("读取文件失败:" + e);
+        }
+        return result.toString();
+    }
 
 
     public static String getFilePathAndContentPrompt(String dir) {
