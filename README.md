@@ -18,7 +18,7 @@
 
 ---
 
-## ✨ Core Features
+## ✨ Features
 
 - **🚀 Comprehensive project context understanding** - AI truly comprehends the entire codebase, not just individual files, and supports almost all document comprehension, including novel creation, copywriting, and more
 - **💬 Natural Language Programming** - Simply state your requirements in Chinese/English, and AI will automatically fulfill them
