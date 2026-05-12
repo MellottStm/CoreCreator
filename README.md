@@ -26,12 +26,12 @@
 - **🌐 Supports 100+ programming languages** (with key optimizations for Python, TypeScript, Go, Rust, Java, etc.)
 
 ## 🌴 Project Construction
+build
 ```bash
-
-#1、build
 mvn clean package
-
-# with console debug
+```
+with console debug
+```bash
 jpackage 
     --name CoreCreator 
     --icon "src\main\resources\Img\logo.ico" 
@@ -48,8 +48,11 @@ jpackage
     --win-menu 
     --win-dir-chooser 
     --win-per-user-install
+```
 
-# without a console
+
+without a console
+```bash
 jpackage 
     --name CoreCreator 
     --icon "src\main\resources\Img\logo.ico" 
@@ -63,7 +66,6 @@ jpackage
     --win-menu 
     --win-dir-chooser 
     --win-per-user-install
-
 ```
 
 

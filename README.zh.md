@@ -26,12 +26,12 @@
 - **🌐 支持 100+ 种编程语言**（重点优化 Python、TypeScript、Go、Rust、Java 等）
 
 ## 🌴 项目构建
+构建
 ```bash
-
-#1、构建
 mvn clean package
-
-#带控制台debug的
+```
+带控制台debug的
+```bash
 jpackage 
     --name CoreCreator 
     --icon "src\main\resources\Img\logo.ico" 
@@ -48,8 +48,9 @@ jpackage
     --win-menu 
     --win-dir-chooser 
     --win-per-user-install
-
-#不带控制台的
+```
+不带控制台的
+```bash
 jpackage 
     --name CoreCreator 
     --icon "src\main\resources\Img\logo.ico" 
@@ -63,7 +64,6 @@ jpackage
     --win-menu 
     --win-dir-chooser 
     --win-per-user-install
-
 ```
 
 
